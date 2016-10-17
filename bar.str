@@ -1,0 +1,9 @@
+string_set[   1]:    2603192927274642682 0x7fabccd00010->"a"
+string_set[   5]:   14436322343602982135 0x7fabccc02780->"bar.oc"
+string_set[   6]:   16758173291689271459 0x7fabccd00100->"c;"
+string_set[   7]:   13742020904102819830 0x7fabccd000d0->"+"
+                    11070605719919197349 0x7fabccd00040->"="
+string_set[  10]:    4947675599669400333 0x7fabccd000a0->"b"
+load_factor = 0.545
+bucket_count = 11
+max_bucket_size = 2
