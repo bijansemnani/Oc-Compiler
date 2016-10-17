@@ -17,11 +17,6 @@ using namespace std;
 #include <iostream>
 #include <sys/wait.h>
 
-FILE* yyin;
-char* yytext;
-int yy_flex_debug;
-int yydebug;
-size_t yyleng;
 
 
 

@@ -17,7 +17,7 @@ CYGEN		 = yyparse.cpp
 LREPORT	 = yylex.output
 YREPORT	 = yyparse.output
 
-all : ${CLGEN} ${EXECBIN}
+all : ${CLGEN} ${CYGEN} ${HYGEN} ${EXECBIN}
 
 ${EXECBIN} : ${OBJECTS}
 		${GPP} ${OBJECTS} -o ${EXECBIN}

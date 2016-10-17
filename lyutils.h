@@ -2,7 +2,7 @@
 
 #ifndef __UTILS_H__
 #define __UTILS_H__
-
+#define YYEOF 0
 // Lex and Yacc interface utility.
 
 #include <string>

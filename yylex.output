@@ -10,7 +10,7 @@ scanner.l:72: warning, rule cannot be matched
 scanner.l:73: warning, rule cannot be matched
 scanner.l:74: warning, rule cannot be matched
 flex version 2.5.35 Apple(flex-31) usage statistics:
-  scanner options: -dsvI8 -Cem -oyylex.cpp
+  scanner options: -dsvI8 -Cem -oyylex.cc
   247/2000 NFA states
   89/1000 DFA states (478 words)
   38 rules
