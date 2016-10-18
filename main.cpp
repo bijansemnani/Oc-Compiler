@@ -45,10 +45,16 @@ void cpplines (FILE* pipe, const char* filename, const char* newName) {
       if (fgets_rc == NULL) break;
       chomp (buffer, '\n');
       // http://gcc.gnu.org/onlinedocs/cpp/Preprocessor-Output.html
-      int sscanf_rc = sscanf (buffer, "# %d \"%[^\"]\"",
-                              &linenr, inputname);
-      if (sscanf_rc == 2) {
+      /*int sscanf_rc = sscanf (buffer, "# %d \"%[^\"]\"",
+                              &linenr, inputname);*/
+      /*if (sscanf_rc == 2) {
          continue;
+      }*/
+      lexer::newfilename (filename);
+      int symbol = 0;
+      while((symbol = yylex()) != YYEOF){
+        cout << parser::get_tname (symbol)<<'\n';
+        lexer::advance();
       }
       char* savepos = NULL;
       char* bufptr = buffer;
@@ -146,8 +152,9 @@ get-file-extension-from-string-in-c*/
     }else {
       //pass in the pipe, the original file and new file name
       cpplines (yyin, extend.c_str(), filename1.c_str());
-      lexer::newfilename (command);
+
       int parse_rc = yyparse();
+      int pcloseint = 0;
       yylex_destroy();
       pclose (yyin);
       printf("exit status = %d\n", exit_status);
@@ -157,15 +164,16 @@ get-file-extension-from-string-in-c*/
         fprintf (stderr, "Dumping string_set:\n");
         string_set::dump (stderr);
       }
-      if (parse_rc) {
+      if (parse_rc != 0) {
         errprintf ("parse failed (%d)\n", parse_rc);
-      }else {
-        astree::print (stdout, parser::root);
 
-        delete parser::root;
-      }
     }
+     if (pclose(yyin) !=0){
+       cerr << "YYin did not close \n"<< pcloseint;
+       exit_status = EXIT_FAILURE;
+     }
 
-   free(unfree);
-   return exit_status;
+ }
+ free(unfree);
+ return exit_status;
 }
