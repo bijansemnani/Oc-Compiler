@@ -27,6 +27,7 @@ int yyparse();
 const char *get_yytname (int symbol);
 void yyerror (const char* message);
 
+
 struct lexer {
    static bool interactive;
    static location lloc;
@@ -39,6 +40,7 @@ struct lexer {
    static void badchar (unsigned char bad);
    static void badtoken (char* lexeme);
    static void include();
+   static void dump (FILE *tok, int symbol);
 };
 
 struct parser {

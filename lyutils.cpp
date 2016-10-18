@@ -54,7 +54,11 @@ void lexer::badchar (unsigned char bad) {
                   buffer);
 }
 
-
+void lexer::dump(FILE *tok, int symbol){
+
+  fprintf(tok, "%zu\t%zu\t%zu\t%d\t%s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,
+    lexer::lloc.offset, symbol,parser::get_tname(symbol), yytext);
+}
 void lexer::badtoken (char* lexeme) {
    errllocprintf (lexer::lloc, "invalid token (%s)\n", lexeme);
 }

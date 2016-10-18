@@ -23,7 +23,7 @@ using namespace std;
 const string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
 void chomp (char* string, char delim);
-void cpplines (FILE* pipe, const char* filename, const char* newName);
+void cpplines (FILE* pipe, const char* filename, string newName);
 
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
@@ -35,7 +35,7 @@ void chomp (char* string, char delim) {
 }
 
 // Run cpp against the lines of the file.
-void cpplines (FILE* pipe, const char* filename, const char* newName) {
+void cpplines (FILE* pipe, const char* filename, string newName) {
    int linenr = 1;
    char inputname[LINESIZE];
    strcpy (inputname, filename);
@@ -45,34 +45,30 @@ void cpplines (FILE* pipe, const char* filename, const char* newName) {
       if (fgets_rc == NULL) break;
       chomp (buffer, '\n');
       // http://gcc.gnu.org/onlinedocs/cpp/Preprocessor-Output.html
-      /*int sscanf_rc = sscanf (buffer, "# %d \"%[^\"]\"",
-                              &linenr, inputname);*/
-      /*if (sscanf_rc == 2) {
-         continue;
-      }*/
-      lexer::newfilename (filename);
-      int symbol = 0;
-      while((symbol = yylex()) != YYEOF){
-        cout << parser::get_tname (symbol)<<'\n';
-        lexer::advance();
-      }
-      char* savepos = NULL;
-      char* bufptr = buffer;
-      for (int tokenct = 1;; ++tokenct) {
-        //tokenize the chars per line
-         char* token = strtok_r (bufptr, " \t\n", &savepos);
-         bufptr = NULL;
-         if (token == NULL) break;
-         string_set::intern (token);
-      }
-      //dump the string set into the .str file
-      FILE* newFile;
-      newFile = fopen(newName, "w"); // w = write
-      if(newFile == NULL){
+      FILE* strFile;
+      strFile = fopen((newName + ".str").c_str(), "w"); // w = write
+      if(strFile == NULL){
         cerr << "FNF" << newName;
             }
-      string_set::dump (newFile);
-      fclose(newFile);
+      FILE* tokFile;
+      tokFile = fopen((newName + ".tok").c_str(), "w"); // w = write
+      if(tokFile == NULL){
+        cerr << "FNF" << newName;
+      }
+      lexer::newfilename (filename);
+      int symbol = 0;
+      while((symbol = yylex()) != YYEOF)
+      {
+        string_set::intern(yytext);
+        lexer::dump(tokFile, symbol);
+        lexer::advance();
+      }
+
+      //dump the string set into the .str file
+
+      string_set::dump (strFile);
+      fclose(strFile);
+      fclose(tokFile);
       ++linenr;
    }
 }
@@ -109,8 +105,7 @@ int main (int argc, char** argv) {
    int index = 0;
    string file = "";// the inputed .oc file
    string extend = "";// original file extension .oc
-   string filename1 = "";// the name of the file
-   string filename2 = "";
+   string filename = "";// the name of the file
    for (index = optind; index < argc; index++){
      file = argv[index];
   }
@@ -122,24 +117,20 @@ get-file-extension-from-string-in-c*/
     }
 
     if(extend == "oc"){
-      filename1 = file.substr(0,file.size()-3) + ".str";
-      filename2 = file.substr(0,file.size()-3) + ".tok";
+      filename = file.substr(0,file.size()-3);
     } else {
       fprintf(stderr, "incorrect file type: %s\n",extend.c_str());
       exit_status = EXIT_FAILURE;
       printf("exit status = %d\n", exit_status);
       return EXIT_FAILURE;
     }
-    //new file as an .str file
-    printf("New File: %s\n", filename1.c_str());
-    //new file as an .tok file
-    printf("New File: %s\n", filename2.c_str());
+
 
     //begin tokenizing process
     const char* execname = basename (argv[0]);
     char* unfree = strdup(file.c_str());
     string newCPP = CPP + " " + unfree;
-
+    int close = 0;
     //printf ("command=\"%s\"\n", newCPP.c_str());
 
     //open a pipe to pass the file through
@@ -151,13 +142,17 @@ get-file-extension-from-string-in-c*/
                 execname, command.c_str(), strerror (errno));
     }else {
       //pass in the pipe, the original file and new file name
-      cpplines (yyin, extend.c_str(), filename1.c_str());
+      cpplines (yyin, extend.c_str(), filename);
 
       int parse_rc = yyparse();
-      int pcloseint = 0;
+
+      close = pclose (yyin);
       yylex_destroy();
-      pclose (yyin);
-      printf("exit status = %d\n", exit_status);
+      if (close !=0){
+        cerr << "YYin did not close \n"<< close;
+        exit_status = EXIT_FAILURE;
+      }
+
       if (yydebug or yy_flex_debug) {
         fprintf (stderr, "Dumping parser::root:\n");
         if (parser::root != nullptr) parser::root->dump_tree (stderr);
@@ -166,14 +161,13 @@ get-file-extension-from-string-in-c*/
       }
       if (parse_rc != 0) {
         errprintf ("parse failed (%d)\n", parse_rc);
+        exit_status = EXIT_FAILURE;
 
     }
-     if (pclose(yyin) !=0){
-       cerr << "YYin did not close \n"<< pcloseint;
-       exit_status = EXIT_FAILURE;
-     }
+
 
  }
  free(unfree);
+ printf("exit status = %d\n", exit_status);
  return exit_status;
 }
