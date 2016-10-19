@@ -53,7 +53,9 @@ void lexer::badchar (unsigned char bad) {
    errllocprintf (lexer::lloc, "invalid source character (%s)\n",
                   buffer);
 }
-
+void lexer::dirdump(FILE *tok, string name){
+  fprintf(tok, " \"%s\"\n ", name.c_str());
+}
 void lexer::dump(FILE *tok, int symbol){
 
   fprintf(tok, "%zu\t%zu\t%zu\t%d\t%s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,

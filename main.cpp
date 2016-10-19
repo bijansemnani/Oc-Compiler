@@ -24,7 +24,6 @@ const string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
 void chomp (char* string, char delim);
 void cpplines (FILE* pipe, const char* filename, string newName);
-
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
 void chomp (char* string, char delim) {
@@ -46,6 +45,7 @@ void cpplines (FILE* pipe, const char* filename, string newName) {
       chomp (buffer, '\n');
       // http://gcc.gnu.org/onlinedocs/cpp/Preprocessor-Output.html
       FILE* strFile;
+      string ocName = "";
       strFile = fopen((newName + ".str").c_str(), "w"); // w = write
       if(strFile == NULL){
         cerr << "FNF" << newName;
@@ -55,7 +55,9 @@ void cpplines (FILE* pipe, const char* filename, string newName) {
       if(tokFile == NULL){
         cerr << "FNF" << newName;
       }
+      ocName = newName + ".oc";
       lexer::newfilename (filename);
+      lexer::dirdump (tokFile, ocName);
       int symbol = 0;
       while((symbol = yylex()) != YYEOF)
       {

@@ -41,6 +41,7 @@ struct lexer {
    static void badtoken (char* lexeme);
    static void include();
    static void dump (FILE *tok, int symbol);
+   static void dirdump(FILE *tok, string name);
 };
 
 struct parser {
