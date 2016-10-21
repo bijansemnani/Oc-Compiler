@@ -1,8 +1,8 @@
 #ifndef __AUXLIB_H__
 #define __AUXLIB_H__
-
+using namespace std;
 #include <stdarg.h>
-
+#include <string>
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
 // DESCRIPTION
@@ -12,7 +12,9 @@
 //
 // Error message and exit status utility.
 //
-
+struct exec{
+  static string execname;
+};
 void set_execname (char* argv0);
 // Sets the program name for use by auxlib messages.
 // Must called from main before anything else is done,

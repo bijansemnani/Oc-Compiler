@@ -21,13 +21,12 @@
 %option warn
 
 LETTER					[A-Za-z_]
-DIGIT					  [0-9]
-MANTISSA				({DIGIT}+\.?{DIGIT}*|\.{DIGIT}+)
-EXPONENT				([Ee][+-]?{DIGIT}+)
-NUMBER					({MANTISSA}{EXPONENT}?)
-NOTNUMBER			  ({MANTISSA}[Ee][+-]?)
-IDENT					  ({LETTER}({LETTER}|{DIGIT})*)
-CHARCONST				('([^\\'\n]|\\[\\'"0nt])')
+NUMBER					([0-9]+)
+NOTIDENT				({NUMBER}{IDENT})
+NOTCHAR					('([^\\'\n]|\\[\\'"0nt])[^'])
+NOTSTRING				(\"([^\\"\n]|\\[\\'"0nt])+[^\"])
+IDENT					  ({LETTER}({LETTER}|{NUMBER})*)
+CHAR				    ('([^\\'\n]|\\[\\'"0nt])')
 STRING					(\"([^\\"\n]|\\[\\'"0nt])*\")
 
 %%
@@ -48,7 +47,7 @@ STRING					(\"([^\\"\n]|\\[\\'"0nt])*\")
 "void"				 { RETURN (TOK_VOID); }
 "while"				 { RETURN (TOK_WHILE); }
 
-{CHARCONST}		 { RETURN (TOK_CHARCON); }
+{CHAR}		     { RETURN (TOK_CHARCON); }
 {STRING}			 { RETURN (TOK_STRINGCON); }
 {NUMBER}			 { RETURN (TOK_INTCON); }
 {IDENT}				 { RETURN (TOK_IDENT); }
@@ -81,7 +80,9 @@ STRING					(\"([^\\"\n]|\\[\\'"0nt])*\")
 
 
 
-{NOTNUMBER}		 { lexer::badtoken (yytext);  }
+{NOTIDENT}		 { lexer::badtoken (yytext);  }
+{NOTCHAR}		   { lexer::badtoken (yytext);  }
+{NOTSTRING}		 { lexer::badchar (*yytext);  }
 .							 { lexer::badchar (*yytext); }
 
 %%

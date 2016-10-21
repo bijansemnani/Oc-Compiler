@@ -81,6 +81,8 @@ int main (int argc, char** argv) {
    int c = 0;
    yy_flex_debug = 0;
    yydebug = 0;
+   char* orgFile = NULL;
+
    while ((c = getopt (argc, argv, "@:D:ly")) != -1)
    switch (c)
      {
@@ -116,6 +118,8 @@ get-file-extension-from-string-in-c*/
       extend = file.substr(file.find_last_of(".")+1);
 
     }
+    orgFile = strdup(file.c_str());
+    set_execname(orgFile);
 
     if(extend == "oc"){
       filename = file.substr(0,file.size()-3);
@@ -169,6 +173,7 @@ get-file-extension-from-string-in-c*/
 
  }
  free(unfree);
+ free(orgFile);
  printf("exit status = %d\n", exit_status);
  return exit_status;
 }

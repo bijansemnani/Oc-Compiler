@@ -59,7 +59,7 @@ void lexer::badchar (unsigned char bad) {
 
 void lexer::dump( int symbol){
 
-  fprintf(lexer::tokFile, "%zu\t%zu.%zu\t%d\t%s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,
+  fprintf(lexer::tokFile, "%zu\t%zu.%03zu\t%d\t%-10s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,
     lexer::lloc.offset, symbol,parser::get_tname(symbol), yytext);
 }
 void lexer::badtoken (char* lexeme) {
@@ -74,7 +74,7 @@ void lexer::include() {
    if (scan_rc != 2) {
       errprintf ("%s: invalid directive, ignored\n", yytext);
    }else {
-     fprintf(lexer::tokFile, "%zu \"%s\"\n", linenr, filename);
+     fprintf(lexer::tokFile, "# %zu \"%s\"\n", linenr, filename);
       if (yy_flex_debug) {
          fprintf (stderr, "--included # %zd \"%s\"\n",
                   linenr, filename);

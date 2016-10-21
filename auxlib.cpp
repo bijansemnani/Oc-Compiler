@@ -13,8 +13,9 @@
 
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
+string exec::execname;
 static int exitstatus = EXIT_SUCCESS;
-static const char* execname = NULL;
+static char* execname = NULL;
 static const char* debugflags = "";
 static bool alldebugflags = false;
 

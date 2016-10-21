@@ -36,10 +36,12 @@ ci :
 		cid + ${SRCFILES}
 
 clean :
-		-rm ${OBJECTS} ${DEPFILE}
+		-rm ${OBJECTS} ${DEPFILE} ${CLGEN} ${HYGEN} ${CYGEN} ${LREPORT} ${YREPORT}
 
 spotless : clean
 		- rm ${EXECBIN}
+		- rm *.str
+		- rm *.tok
 
 ${DEPFILE} :
 		${MKDEP} ${SOURCES} >${DEPFILE}
