@@ -56,13 +56,12 @@ void cpplines (FILE* pipe, const char* filename, string newName) {
         cerr << "FNF" << newName;
       }
       ocName = newName + ".oc";
-      lexer::newfilename (filename);
-      lexer::dirdump (tokFile, ocName);
+      lexer::newfilename (filename, tokFile);
       int symbol = 0;
       while((symbol = yylex()) != YYEOF)
       {
         string_set::intern(yytext);
-        lexer::dump(tokFile, symbol);
+        lexer::dump(symbol);
         lexer::advance();
       }
 

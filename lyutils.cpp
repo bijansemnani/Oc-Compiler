@@ -13,7 +13,7 @@ bool lexer::interactive = true;
 location lexer::lloc = {0, 1, 0};
 size_t lexer::last_yyleng = 0;
 vector<string> lexer::filenames;
-
+FILE* lexer::tokFile;
 astree* parser::root = nullptr;
 
 const string* lexer::filename (int filenr) {
@@ -24,7 +24,8 @@ const char* parser::get_tname (int symbol){
   return get_yytname(symbol);
 }
 
-void lexer::newfilename (const string& filename) {
+void lexer::newfilename (const string& filename, FILE* tok) {
+   lexer::tokFile = tok;
    lexer::lloc.filenr = lexer::filenames.size();
    lexer::filenames.push_back (filename);
 }
@@ -53,12 +54,12 @@ void lexer::badchar (unsigned char bad) {
    errllocprintf (lexer::lloc, "invalid source character (%s)\n",
                   buffer);
 }
-void lexer::dirdump(FILE *tok, string name){
-  fprintf(tok, " \"%s\"\n ", name.c_str());
-}
-void lexer::dump(FILE *tok, int symbol){
 
-  fprintf(tok, "%zu\t%zu\t%zu\t%d\t%s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,
+
+
+void lexer::dump( int symbol){
+
+  fprintf(lexer::tokFile, "%zu\t%zu.%zu\t%d\t%s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,
     lexer::lloc.offset, symbol,parser::get_tname(symbol), yytext);
 }
 void lexer::badtoken (char* lexeme) {
@@ -73,12 +74,13 @@ void lexer::include() {
    if (scan_rc != 2) {
       errprintf ("%s: invalid directive, ignored\n", yytext);
    }else {
+     fprintf(lexer::tokFile, "%zu \"%s\"\n", linenr, filename);
       if (yy_flex_debug) {
          fprintf (stderr, "--included # %zd \"%s\"\n",
                   linenr, filename);
       }
       lexer::lloc.linenr = linenr - 1;
-      lexer::newfilename (filename);
+      lexer::newfilename (filename, lexer::tokFile);
    }
 }
 

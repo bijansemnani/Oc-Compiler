@@ -34,14 +34,14 @@ struct lexer {
    static size_t last_yyleng;
    static vector<string> filenames;
    static const string* filename (int filenr);
-   static void newfilename (const string& filename);
+   static FILE* tokFile;
+   static void newfilename (const string& filename, FILE* tok);
    static void advance();
    static void newline();
    static void badchar (unsigned char bad);
    static void badtoken (char* lexeme);
    static void include();
-   static void dump (FILE *tok, int symbol);
-   static void dirdump(FILE *tok, string name);
+   static void dump (int symbol);
 };
 
 struct parser {
