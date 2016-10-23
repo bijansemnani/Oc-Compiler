@@ -37,6 +37,7 @@ void chomp (char* string, char delim) {
 void cpplines (FILE* pipe, const char* filename, string newName) {
    int linenr = 1;
    char inputname[LINESIZE];
+   
    strcpy (inputname, filename);
    for (;;) {
       char buffer[LINESIZE];
@@ -55,7 +56,7 @@ void cpplines (FILE* pipe, const char* filename, string newName) {
       if(tokFile == NULL){
         cerr << "FNF" << newName;
       }
-      ocName = newName + ".oc";
+      //dump tokenized output into .tok file
       lexer::newfilename (filename, tokFile);
       int symbol = 0;
       while((symbol = yylex()) != YYEOF)
@@ -64,10 +65,11 @@ void cpplines (FILE* pipe, const char* filename, string newName) {
         lexer::dump(symbol);
         lexer::advance();
       }
-
       //dump the string set into the .str file
 
       string_set::dump (strFile);
+
+
       fclose(strFile);
       fclose(tokFile);
       ++linenr;
@@ -118,6 +120,7 @@ get-file-extension-from-string-in-c*/
       extend = file.substr(file.find_last_of(".")+1);
 
     }
+    //set execname
     orgFile = strdup(file.c_str());
     set_execname(orgFile);
 
@@ -136,7 +139,6 @@ get-file-extension-from-string-in-c*/
     char* unfree = strdup(file.c_str());
     string newCPP = CPP + " " + unfree;
     int close = 0;
-    //printf ("command=\"%s\"\n", newCPP.c_str());
 
     //open a pipe to pass the file through
     yyin = popen (newCPP.c_str(), "r");

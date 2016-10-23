@@ -1,5 +1,6 @@
 // $Id: lyutils.cpp,v 1.11 2016-10-06 16:42:53-07 - - $
-
+//Bijan Semnani bsemnani
+//Ricardo Munoz riamunoz
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -59,7 +60,8 @@ void lexer::badchar (unsigned char bad) {
 
 void lexer::dump( int symbol){
 
-  fprintf(lexer::tokFile, "%zu\t%zu.%03zu\t%d\t%-10s\t(%s)\n", lexer::lloc.filenr, lexer::lloc.linenr,
+  fprintf(lexer::tokFile, "%zu\t%zu.%03zu\t%d\t%-10s\t(%s)\n",
+    lexer::lloc.filenr, lexer::lloc.linenr,
     lexer::lloc.offset, symbol,parser::get_tname(symbol), yytext);
 }
 void lexer::badtoken (char* lexeme) {
