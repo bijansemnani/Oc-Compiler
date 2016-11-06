@@ -16,7 +16,7 @@ astree::astree (int symbol_, const location& lloc_, const char* info) {
    symbol = symbol_;
    lloc = lloc_;
    lexinfo = string_set::intern (info);
-   lexer::dump(symbol);
+   //lexer::dump(symbol);
    // vector defaults to empty -- no children
 }
 
@@ -39,12 +39,14 @@ astree* astree::adoptOne (astree* child1, astree* child2) {
 
    return child1;
 }
-astree* astree::adoptTwo (astree* child1, astree* child2, astree* child3) {
+astree* astree::adoptTwo (astree* child1,
+  astree* child2, astree* child3) {
   astree::adoptOne(child1, child2);
   astree::adoptOne(child1, child3);
   return child1;
 }
-astree* astree::adoptThree (astree* child1, astree* child2, astree* child3, astree* child4) {
+astree* astree::adoptThree (astree* child1,
+  astree* child2, astree* child3, astree* child4) {
   astree::adoptOne(child1, child2);
   astree::adoptOne(child1, child3);
   astree::adoptOne(child1, child4);
@@ -80,9 +82,12 @@ void astree::dump (FILE* outfile, astree* tree) {
 }
 
 void astree::print (FILE* outfile, astree* tree, int depth) {
+   char *tname = strdup(parser::get_tname (tree->symbol));
+   if (strstr (tname, "TOK_") == tname)
+      tname += 4;
    fprintf (outfile, "; %*s", depth * 3, "");
    fprintf (outfile, "%s \"%s\" (%zd.%zd.%zd)\n",
-            parser::get_tname (tree->symbol), tree->lexinfo->c_str(),
+            tname, tree->lexinfo->c_str(),
             tree->lloc.filenr, tree->lloc.linenr, tree->lloc.offset);
    for (astree* child: tree->children) {
       astree::print (outfile, child, depth + 1);

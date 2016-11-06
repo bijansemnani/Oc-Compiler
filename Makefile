@@ -53,3 +53,4 @@ spotless : clean
 		- rm ${EXECBIN}
 		- rm *.str
 		- rm *.tok
+		- rm *.ast

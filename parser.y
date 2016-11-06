@@ -64,181 +64,181 @@ program  : program structdef    { $$ = astree::adoptOne ($1, $2); }
          ;
 
 structdef: TOK_STRUCT TOK_IDENT '{' '}'
-                                {
-                                  astree::astreeFree($3);
-                                  astree::astreeFree($4);
-                                  $2 = astree::adopt_sym($2, TOK_TYPEID);
-                                  $$ = astree::adoptOne($1,$2);
-                                }
+              {
+                astree::astreeFree($3);
+                astree::astreeFree($4);
+                $2 = astree::adopt_sym($2, TOK_TYPEID);
+                $$ = astree::adoptOne($1,$2);
+              }
          | TOK_STRUCT TOK_IDENT field '}'
-                                {
-                                  astree::astreeFree($4);
-                                  $2 = astree::adopt_sym($2, TOK_TYPEID);
-                                  $$ = astree::adoptTwo($1,$2,$3);
-                                }
+              {
+                astree::astreeFree($4);
+                $2 = astree::adopt_sym($2, TOK_TYPEID);
+                $$ = astree::adoptTwo($1,$2,$3);
+              }
 field    : '{' fielddecl ';'
-                                {
-                                  astree::astreeFree($3);
-                                  $$ = astree::adoptOne($1,$2);
-                                }
+              {
+                astree::astreeFree($3);
+                $$ = astree::adoptOne($1,$2);
+              }
 
          | field fielddecl ';'
-                                {
-                                  astree::astreeFree($3);
-                                  $$ = astree::adoptOne($1,$2);
-                                }
+              {
+                astree::astreeFree($3);
+                $$ = astree::adoptOne($1,$2);
+              }
          ;
 
 fielddecl: basetype TOK_ARRAY TOK_IDENT
-                                {
-                                  $3 = astree::adopt_sym($3, TOK_TYPEID);
-                                  $$ = astree::adoptTwo($1, $2, $3);
-                                }
+              {
+                $3 = astree::adopt_sym($3, TOK_TYPEID);
+                $$ = astree::adoptTwo($1, $2, $3);
+              }
 
          | basetype TOK_IDENT
-                                {
-                                  $2 = astree::adopt_sym($2, TOK_TYPEID);
-                                  $$ = astree::adoptOne($1, $2);
-                                }
+              {
+                $2 = astree::adopt_sym($2, TOK_TYPEID);
+                $$ = astree::adoptOne($1, $2);
+              }
          ;
 
-basetype : TOK_VOID             { $$ = $1;}
-         | TOK_CHAR             { $$ = $1;}
-         | TOK_INT              { $$ = $1;}
-         | TOK_STRING           { $$ = $1;}
-         | TOK_IDENT            { $$ = astree::adopt_sym($1, TOK_TYPEID);}
+basetype : TOK_VOID    { $$ = $1;}
+         | TOK_CHAR    { $$ = $1;}
+         | TOK_INT     { $$ = $1;}
+         | TOK_STRING  { $$ = $1;}
+         | TOK_IDENT   { $$ = astree::adopt_sym($1, TOK_TYPEID);}
          ;
 
 function : identdecl '(' ')' ';'
-                                {
-                                  astree::astreeFree($3);
-                                  astree::astreeFree($4);
-                                  $2 = astree::adopt_sym($2, TOK_PARAMLIST);
-                                  $$ = new astree(TOK_PROTOTYPE,$1->lloc, "");
-                                  $$ = astree::adoptTwo($$, $1, $2);
-                                }
+                {
+                  astree::astreeFree($3);
+                  astree::astreeFree($4);
+                  $2 = astree::adopt_sym($2, TOK_PARAMLIST);
+                  $$ = new astree(TOK_PROTOTYPE,$1->lloc, "");
+                  $$ = astree::adoptTwo($$, $1, $2);
+                }
          | identdecl '(' ')' block
-                                {
-                                  astree::astreeFree($3);
-                                  $2 = astree::adopt_sym($2, TOK_PARAMLIST);
-                                  $$ = new astree(TOK_FUNCTION, $1->lloc, "");
-                                  $$ = astree::adoptThree($$, $1, $2, $4);
-                                }
+                {
+                  astree::astreeFree($3);
+                  $2 = astree::adopt_sym($2, TOK_PARAMLIST);
+                  $$ = new astree(TOK_FUNCTION, $1->lloc, "");
+                  $$ = astree::adoptThree($$, $1, $2, $4);
+                }
          | identdecl param ')' ';'
-                                {
-                                  astree::astreeFree($3);
-                                  astree::astreeFree($4);
-                                  $$ = new astree(TOK_PROTOTYPE, $1->lloc, "");
-                                  $$ = astree::adoptTwo($$, $1, $2);
-                                }
+                {
+                  astree::astreeFree($3);
+                  astree::astreeFree($4);
+                  $$ = new astree(TOK_PROTOTYPE, $1->lloc, "");
+                  $$ = astree::adoptTwo($$, $1, $2);
+                }
          | identdecl param ')' block
-                                {
-                                  astree::astreeFree($3);
-                                  $$ = new astree(TOK_FUNCTION, $1->lloc, "");
-                                  $$ = astree::adoptThree($$,$1,$2, $4);
-                                }
+                {
+                  astree::astreeFree($3);
+                  $$ = new astree(TOK_FUNCTION, $1->lloc, "");
+                  $$ = astree::adoptThree($$,$1,$2, $4);
+                }
          ;
 
 param    : '(' identdecl
-                                {
-                                  $1 = astree::adopt_sym($1, TOK_PARAMLIST);
-                                  $$ = astree::adoptOne($1,$2);
-                                }
+                {
+                  $1 = astree::adopt_sym($1, TOK_PARAMLIST);
+                  $$ = astree::adoptOne($1,$2);
+                }
          | param ',' identdecl
-                                {
-                                  astree::astreeFree($2);
-                                  $$ = astree::adoptOne($1, $3);
-                                }
+                {
+                  astree::astreeFree($2);
+                  $$ = astree::adoptOne($1, $3);
+                }
          ;
 
 identdecl: basetype TOK_ARRAY TOK_IDENT
-                                {
-                                  $3 = astree::adopt_sym($3, TOK_DECLID);
-                                  $$ = astree::adoptTwo($1, $2, $3);
-                                }
+                {
+                  $3 = astree::adopt_sym($3, TOK_DECLID);
+                  $$ = astree::adoptTwo($1, $2, $3);
+                }
          | basetype TOK_IDENT
-                                {
-                                  $2 = astree::adopt_sym($2, TOK_DECLID);
-                                  $$ = astree::adoptOne($1, $2);
-                                }
+                {
+                  $2 = astree::adopt_sym($2, TOK_DECLID);
+                  $$ = astree::adoptOne($1, $2);
+                }
          ;
 
 block    : '{' '}'
-                                {
-                                  astree::astreeFree($2);
-                                  $$ = astree::adopt_sym($1, TOK_BLOCK);
-                                }
+                {
+                  astree::astreeFree($2);
+                  $$ = astree::adopt_sym($1, TOK_BLOCK);
+                }
          | state '}'
-                                {
-                                  astree::astreeFree($2);
-                                  $$ = astree::adopt_sym($1, TOK_BLOCK);
-                                }
+                {
+                  astree::astreeFree($2);
+                  $$ = astree::adopt_sym($1, TOK_BLOCK);
+                }
          ;
 
 state    : '{' statement
-                                {
-                                  astree::adopt_sym($1, TOK_BLOCK);
-                                  $$ = astree::adoptOne($1, $2);
-                                }
+                {
+                  astree::adopt_sym($1, TOK_BLOCK);
+                  $$ = astree::adoptOne($1, $2);
+                }
          | state statement
-                                { $$ = astree::adoptOne($1, $2); }
+                { $$ = astree::adoptOne($1, $2); }
          ;
 
-statement: block                { $$ = $1;}
-         | vardecl              { $$ = $1;}
-         | while                { $$ = $1;}
-         | ifelse              { $$ = $1;}
-         | return               { $$ = $1;}
-         | expr ';'             {
-                                  astree::astreeFree($2);
-                                  $$ = $1;
-                                }
-         | ';'                  { $$ = $1;}
+statement: block      { $$ = $1;}
+         | vardecl    { $$ = $1;}
+         | while      { $$ = $1;}
+         | ifelse     { $$ = $1;}
+         | return     { $$ = $1;}
+         | expr ';'   {
+                        astree::astreeFree($2);
+                        $$ = $1;
+                      }
+         | ';'        { $$ = $1;}
          ;
 
 vardecl  : identdecl '=' expr ';'
-                                {
-                                  astree::astreeFree($4);
-                                  $2 = astree::adopt_sym($2, TOK_VARDECL);
-                                  $$ = astree::adoptTwo($1, $2, $3);
-                                }
+                {
+                  astree::astreeFree($4);
+                  $2 = astree::adopt_sym($2, TOK_VARDECL);
+                  $$ = astree::adoptTwo($1, $2, $3);
+                }
          ;
 
 while    : TOK_WHILE '(' expr ')' statement
-                                {
-                                  astree::astreeFree($2);
-                                  astree::astreeFree($4);
-                                  $$ = astree::adoptTwo($1, $3, $5);
-                                }
+                {
+                  astree::astreeFree($2);
+                  astree::astreeFree($4);
+                  $$ = astree::adoptTwo($1, $3, $5);
+                }
          ;
 
 ifelse    : TOK_IF '(' expr ')' statement
-                                {
-                                  astree::astreeFree($2);
-                                  astree::astreeFree($4);
-                                  $$ = astree::adoptTwo($1, $3, $5);
-                                }
+                {
+                  astree::astreeFree($2);
+                  astree::astreeFree($4);
+                  $$ = astree::adoptTwo($1, $3, $5);
+                }
 
           | TOK_IF '(' expr ')' statement TOK_ELSE statement
-                                {
-                                  astree::astreeFree($2);
-                                  astree::astreeFree($4);
-                                  $1 = astree::adopt_sym($1, TOK_IFELSE);
-                                  $$ = astree::adoptThree($1, $3, $5, $7);
-                                }
+                {
+                  astree::astreeFree($2);
+                  astree::astreeFree($4);
+                  $1 = astree::adopt_sym($1, TOK_IFELSE);
+                  $$ = astree::adoptThree($1, $3, $5, $7);
+                }
           ;
 
 return    : TOK_RETURN ';'
-                                {
-                                  astree::astreeFree($2);
-                                  $1 = astree::adopt_sym($1, TOK_RETURNVOID);
-                                }
+                {
+                  astree::astreeFree($2);
+                  $1 = astree::adopt_sym($1, TOK_RETURNVOID);
+                }
 
           | TOK_RETURN expr ';'
-                                {
-                                  astree::astreeFree($3);
-                                  $$ = astree::adoptOne($1, $2);
-                                }
+                {
+                  astree::astreeFree($3);
+                  $$ = astree::adoptOne($1, $2);
+                }
           ;
 
 expr      : expr BIONOP expr    { $$ = astree::adoptTwo($1, $2, $3); }
@@ -277,66 +277,66 @@ UNOP      : TOK_POS             { $$ = $1; }
           ;
 
 allocator : TOK_NEW TOK_IDENT '(' ')'
-                                {
-                                  astree::astreeFree($3);
-                                  astree::astreeFree($4);
-                                  $2 = astree::adopt_sym($2, TOK_TYPEID);
-                                  $$ = astree::adoptOne($1, $2);
-                                }
+                {
+                  astree::astreeFree($3);
+                  astree::astreeFree($4);
+                  $2 = astree::adopt_sym($2, TOK_TYPEID);
+                  $$ = astree::adoptOne($1, $2);
+                }
           | TOK_NEW TOK_STRING '('expr ')'
-                                {
-                                  astree::astreeFree($2);
-                                  astree::astreeFree($3);
-                                  astree::astreeFree($5);
-                                  $1 = astree::adopt_sym($1, TOK_NEWSTRING);
-                                  $$ = astree::adoptOne($1, $4);
-                                }
+                {
+                  astree::astreeFree($2);
+                  astree::astreeFree($3);
+                  astree::astreeFree($5);
+                  $1 = astree::adopt_sym($1, TOK_NEWSTRING);
+                  $$ = astree::adoptOne($1, $4);
+                }
           | TOK_NEW basetype '[' expr ']'
-                                {
-                                  astree::astreeFree($3);
-                                  astree::astreeFree($5);
-                                  $1 = astree::adopt_sym($1, TOK_NEWARRAY);
-                                  $$ = astree::adoptTwo($1, $2, $4);
-                                }
+                {
+                  astree::astreeFree($3);
+                  astree::astreeFree($5);
+                  $1 = astree::adopt_sym($1, TOK_NEWARRAY);
+                  $$ = astree::adoptTwo($1, $2, $4);
+                }
           ;
 
 call      : TOK_IDENT '(' ')'
-                                {
-                                  astree::astreeFree($3);
-                                  $2 = astree::adopt_sym($2, TOK_CALL);
-                                  $$ = astree::adoptOne($2, $1);
-                                }
+                {
+                  astree::astreeFree($3);
+                  $2 = astree::adopt_sym($2, TOK_CALL);
+                  $$ = astree::adoptOne($2, $1);
+                }
           | EXP ')'
-                                {
-                                  astree::astreeFree($2);
-                                  $$ = $1;
-                                }
+                {
+                  astree::astreeFree($2);
+                  $$ = $1;
+                }
           ;
 
 EXP       : TOK_IDENT '(' expr
-                                {
-                                  $2 = astree::adopt_sym($2, TOK_CALL);
-                                  $$ = astree::adoptTwo($2, $1, $3);
-                                }
+                {
+                  $2 = astree::adopt_sym($2, TOK_CALL);
+                  $$ = astree::adoptTwo($2, $1, $3);
+                }
           | EXP ',' expr
-                                {
-                                  astree::astreeFree($2);
-                                  $$ = astree::adoptOne($1, $3);
-                                }
+                {
+                  astree::astreeFree($2);
+                  $$ = astree::adoptOne($1, $3);
+                }
           ;
 
 variable  : TOK_IDENT           { $$ = $1; }
           | expr '[' expr ']'
-                                {
-                                  astree::astreeFree($4);
-                                  $2 = astree::adopt_sym($2, TOK_INDEX);
-                                  $$ = astree::adoptTwo($2, $1, $3);
-                                }
+                {
+                  astree::astreeFree($4);
+                  $2 = astree::adopt_sym($2, TOK_INDEX);
+                  $$ = astree::adoptTwo($2, $1, $3);
+                }
           | expr '.' TOK_IDENT
-                                {
-                                  $3 = astree::adopt_sym($3, TOK_FIELD);
-                                  $$ = astree::adoptTwo($2, $1, $3);
-                                }
+                {
+                  $3 = astree::adopt_sym($3, TOK_FIELD);
+                  $$ = astree::adoptTwo($2, $1, $3);
+                }
           ;
 
 constant  : TOK_INTCON          { $$ = $1; }

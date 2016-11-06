@@ -9,6 +9,7 @@
 #define YY_USER_ACTION  { lexer::advance(); }
 #define RETURN(SYMBOL) { \
    yylval = new astree (SYMBOL, lexer::lloc, yytext); \
+   lexer::dump(SYMBOL);\
    return SYMBOL; \
 }
 

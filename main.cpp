@@ -124,7 +124,7 @@ get-file-extension-from-string-in-c*/
       else if(yyparse_rc ==1){
         cerr<< "yyparse still failed";
       }
-      int symbol = 0;
+      
       /*while((symbol = yylex()) != YYEOF)
       {
         string_set::intern(yytext);

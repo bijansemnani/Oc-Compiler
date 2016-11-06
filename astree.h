@@ -28,8 +28,10 @@ struct astree {
    astree (int symbol, const location&, const char* lexinfo);
    static void astreeFree(astree* root);
    static astree* adoptOne (astree* child1, astree* child2);
-   static astree* adoptTwo (astree* child1, astree* child2, astree* child3);
-   static astree* adoptThree (astree* child1, astree* child2, astree* child3, astree* child4);
+   static astree* adoptTwo (astree* child1,
+     astree* child2, astree* child3);
+   static astree* adoptThree (astree* child1,
+     astree* child2, astree* child3, astree* child4);
    static astree* adopt_sym (astree* child, int symbol);
    void dump_node (FILE*);
    void dump_tree (FILE*, int depth = 0);
