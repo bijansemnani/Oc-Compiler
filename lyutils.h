@@ -25,6 +25,7 @@ extern size_t yyleng;
 int yylex();
 int yylex_destroy();
 int yyparse();
+extern astree* yyparse_astree;
 const char *get_yytname (int symbol);
 void yyerror (const char* message);
 

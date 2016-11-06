@@ -25,9 +25,9 @@
 LETTER          [A-Za-z_]
 NUMBER          ([0-9]+)
 NOTIDENT        ({NUMBER}{IDENT})
-NOTCHAR          ('([^\\'\n]|\\[\\'"0nt])[^'])
-NOTSTRING        (\"([^\\"\n]|\\[\\'"0nt])+[^\"])
-IDENT            ({LETTER}({LETTER}|{NUMBER})*)
+NOTCHAR         ('([^\\'\n]|\\[\\'"0nt])[^'])
+NOTSTRING       (\"([^\\"\n]|\\[\\'"0nt])+[^\"])
+IDENT           ({LETTER}({LETTER}|{NUMBER})*)
 CHAR            ('([^\\'\n]|\\[\\'"0nt])')
 STRING          (\"([^\\"\n]|\\[\\'"0nt])*\")
 
@@ -40,20 +40,20 @@ STRING          (\"([^\\"\n]|\\[\\'"0nt])*\")
 "char"         { RETURN (TOK_CHAR); }
 "else"         { RETURN (TOK_ELSE); }
 "if"           { RETURN (TOK_IF); }
-"int"           { RETURN (TOK_INT); }
-"new"           { RETURN (TOK_NEW); }
+"int"          { RETURN (TOK_INT); }
+"new"          { RETURN (TOK_NEW); }
 "null"         { RETURN (TOK_NULL); }
 "return"       { RETURN (TOK_RETURN); }
 "string"       { RETURN (TOK_STRING); }
 "struct"       { RETURN (TOK_STRUCT); }
 "void"         { RETURN (TOK_VOID); }
-"while"         { RETURN (TOK_WHILE); }
+"while"        { RETURN (TOK_WHILE); }
 
-{CHAR}         { RETURN (TOK_CHARCON); }
-{STRING}       { RETURN (TOK_STRINGCON); }
-{NUMBER}       { RETURN (TOK_INTCON); }
+{CHAR}          { RETURN (TOK_CHARCON); }
+{STRING}        { RETURN (TOK_STRINGCON); }
+{NUMBER}        { RETURN (TOK_INTCON); }
 {IDENT}         { RETURN (TOK_IDENT); }
-"[]"           { RETURN (TOK_ARRAY); }
+"[]"            { RETURN (TOK_ARRAY); }
 "["             { RETURN ('['); }
 "]"             { RETURN (']'); }
 "="             { RETURN ('='); }
@@ -76,9 +76,8 @@ STRING          (\"([^\\"\n]|\\[\\'"0nt])*\")
 "<="           { RETURN (TOK_LE); }
 ">="           { RETURN (TOK_GE); }
 "!="           { RETURN (TOK_NE); }
-"<"             { RETURN (TOK_LT); }
-">"             { RETURN (TOK_GT); }
-
+"<"            { RETURN (TOK_LT); }
+">"            { RETURN (TOK_GT); }
 
 
 

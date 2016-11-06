@@ -4,7 +4,6 @@ VALGRIND	 = valgrind --leak-check=full --show-reachable=yes
 #Bijan  Semnani
 #Ricardo Munoz
 MKFILE	 = Makefile
-DEPFILE	= Makefile.dep
 SOURCE1 = stringset.cpp main.cpp auxlib.cpp astree.cpp
 SOURCE2 = lyutils.cpp yyparse.cpp yylex.cpp
 SOURCES	= ${SOURCE1} ${SOURCE2}
@@ -23,6 +22,13 @@ YREPORT	 = yyparse.output
 
 all : ${CLGEN} ${CYGEN} ${HYGEN} ${EXECBIN}
 
+${CLGEN} : ${LSOURCES}
+	 flex --outfile=${CLGEN} ${LSOURCES} 2>${LREPORT}
+	 - grep -v '^ ' ${LREPORT}
+
+${CYGEN} ${HYGEN} : ${YSOURCES}
+		bison --defines=${HYGEN} --output=${CYGEN} ${YSOURCES}
+
 ${EXECBIN} : ${OBJECTS}
 		${GPP} ${OBJECTS} -o ${EXECBIN}
 
@@ -37,7 +43,6 @@ ci :
 
 clean :
 		-rm ${OBJECTS}
-		-rm ${DEPFILE}
 		-rm ${CLGEN}
 		-rm ${HYGEN}
 		-rm ${CYGEN}
@@ -46,22 +51,5 @@ clean :
 
 spotless : clean
 		- rm ${EXECBIN}
-		- rm *.cc
 		- rm *.str
 		- rm *.tok
-
-${DEPFILE} :
-		${MKDEP} ${SOURCES} >${DEPFILE}
-
-dep :
-		- rm ${DEPFILE}
-		${MAKE} --no-print-directory ${DEPFILE}
-
-${CLGEN} : ${LSOURCES}
-		flex --outfile=${CLGEN} ${LSOURCES} 2>${LREPORT}
-		- grep -v ’ˆ ’ ${LREPORT}
-
-${CYGEN} ${HYGEN} : ${YSOURCES}
-		bison --defines=${HYGEN} --output=${CYGEN} ${YSOURCES}
-
-include ${DEPFILE}

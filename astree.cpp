@@ -16,31 +16,43 @@ astree::astree (int symbol_, const location& lloc_, const char* info) {
    symbol = symbol_;
    lloc = lloc_;
    lexinfo = string_set::intern (info);
+   lexer::dump(symbol);
    // vector defaults to empty -- no children
 }
 
-astree::~astree() {
-   while (not children.empty()) {
-      astree* child = children.back();
-      children.pop_back();
-      delete child;
+void astree::astreeFree(astree* root) {
+   while (not root->children.empty()) {
+      astree* child = root->children.back();
+      root->children.pop_back();
+      astreeFree(child);
    }
    if (yydebug) {
       fprintf (stderr, "Deleting astree (");
-      astree::dump (stderr, this);
+      //astree::dump (stderr, this);
       fprintf (stderr, ")\n");
    }
+   delete root;
 }
 
-astree* astree::adopt (astree* child1, astree* child2) {
-   if (child1 != nullptr) children.push_back (child1);
-   if (child2 != nullptr) children.push_back (child2);
-   return this;
-}
+astree* astree::adoptOne (astree* child1, astree* child2) {
+   if (child1 != nullptr) child1->children.push_back (child2);
 
+   return child1;
+}
+astree* astree::adoptTwo (astree* child1, astree* child2, astree* child3) {
+  astree::adoptOne(child1, child2);
+  astree::adoptOne(child1, child3);
+  return child1;
+}
+astree* astree::adoptThree (astree* child1, astree* child2, astree* child3, astree* child4) {
+  astree::adoptOne(child1, child2);
+  astree::adoptOne(child1, child3);
+  astree::adoptOne(child1, child4);
+  return child1;
+}
 astree* astree::adopt_sym (astree* child, int symbol_) {
-   symbol = symbol_;
-   return adopt (child);
+   child->symbol = symbol_;
+   return child;
 }
 
 

@@ -22,60 +22,9 @@ using namespace std;
 
 const string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
-void chomp (char* string, char delim);
-void cpplines (FILE* pipe, const char* filename, string newName);
+
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
-void chomp (char* string, char delim) {
-   size_t len = strlen (string);
-   if (len == 0) return;
-   char* nlpos = string + len - 1;
-   if (*nlpos == delim) *nlpos = '\0';
-}
-
-// Run cpp against the lines of the file.
-void cpplines (FILE* pipe, const char* filename, string newName) {
-   int linenr = 1;
-   char inputname[LINESIZE];
-   
-   strcpy (inputname, filename);
-   for (;;) {
-      char buffer[LINESIZE];
-      char* fgets_rc = fgets (buffer, LINESIZE, pipe);
-      if (fgets_rc == NULL) break;
-      chomp (buffer, '\n');
-      // http://gcc.gnu.org/onlinedocs/cpp/Preprocessor-Output.html
-      FILE* strFile;
-      string ocName = "";
-      strFile = fopen((newName + ".str").c_str(), "w"); // w = write
-      if(strFile == NULL){
-        cerr << "FNF" << newName;
-            }
-      FILE* tokFile;
-      tokFile = fopen((newName + ".tok").c_str(), "w"); // w = write
-      if(tokFile == NULL){
-        cerr << "FNF" << newName;
-      }
-      //dump tokenized output into .tok file
-      lexer::newfilename (filename, tokFile);
-      int symbol = 0;
-      while((symbol = yylex()) != YYEOF)
-      {
-        string_set::intern(yytext);
-        lexer::dump(symbol);
-        lexer::advance();
-      }
-      //dump the string set into the .str file
-
-      string_set::dump (strFile);
-
-
-      fclose(strFile);
-      fclose(tokFile);
-      ++linenr;
-   }
-}
-
 
 int main (int argc, char** argv) {
   int exit_status = EXIT_SUCCESS;
@@ -149,8 +98,47 @@ get-file-extension-from-string-in-c*/
                 execname, command.c_str(), strerror (errno));
     }else {
       //pass in the pipe, the original file and new file name
-      cpplines (yyin, extend.c_str(), filename);
+      //cpplines (yyin, extend.c_str(), filename);
+      FILE* strFile;
+      string ocName = "";
+      strFile = fopen((filename + ".str").c_str(), "w"); // w = write
+      if(strFile == NULL){
+        cerr << "FNF" << filename;
+            }
+      FILE* tokFile;
+      tokFile = fopen((filename + ".tok").c_str(), "w"); // w = write
+      if(tokFile == NULL){
+        cerr << "FNF" << filename;
+      }
+      FILE* astFile;
+      astFile = fopen((filename + ".ast").c_str(), "w"); // w = write
+      if(strFile == NULL){
+        cerr << "FNF" << filename;
+            }
+      //dump tokenized output into .tok file
+      lexer::newfilename (filename, tokFile);
+      int yyparse_rc = yyparse();
+      if(yyparse_rc ==2){
+        cerr<< "yyparse failed";
+      }
+      else if(yyparse_rc ==1){
+        cerr<< "yyparse still failed";
+      }
+      int symbol = 0;
+      /*while((symbol = yylex()) != YYEOF)
+      {
+        string_set::intern(yytext);
+        lexer::dump(symbol);
+        lexer::advance();
 
+      }*/
+      //dump the string set into the .str file
+
+      string_set::dump (strFile);
+      astree::print(astFile, parser::root, 0);
+      fclose(astFile);
+      fclose(strFile);
+      fclose(tokFile);
       int parse_rc = yyparse();
 
       close = pclose (yyin);

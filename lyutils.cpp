@@ -17,6 +17,7 @@ vector<string> lexer::filenames;
 FILE* lexer::tokFile;
 astree* parser::root = nullptr;
 
+
 const string* lexer::filename (int filenr) {
    return &lexer::filenames.at(filenr);
 }

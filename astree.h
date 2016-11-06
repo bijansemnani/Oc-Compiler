@@ -1,5 +1,5 @@
 // $Id: astree.h,v 1.7 2016-10-06 16:13:39-07 - - $
-//Bijan Semnani bsemnani 
+//Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
 #ifndef __ASTREE_H__
 #define __ASTREE_H__
@@ -26,9 +26,11 @@ struct astree {
 
    // Functions.
    astree (int symbol, const location&, const char* lexinfo);
-   ~astree();
-   astree* adopt (astree* child1, astree* child2 = nullptr);
-   astree* adopt_sym (astree* child, int symbol);
+   static void astreeFree(astree* root);
+   static astree* adoptOne (astree* child1, astree* child2);
+   static astree* adoptTwo (astree* child1, astree* child2, astree* child3);
+   static astree* adoptThree (astree* child1, astree* child2, astree* child3, astree* child4);
+   static astree* adopt_sym (astree* child, int symbol);
    void dump_node (FILE*);
    void dump_tree (FILE*, int depth = 0);
    static void dump (FILE* outfile, astree* tree);
