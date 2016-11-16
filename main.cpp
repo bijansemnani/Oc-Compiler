@@ -13,6 +13,7 @@ using namespace std;
 #include "auxlib.h"
 #include "lyutils.h"
 #include "astree.h"
+#include "symtable.h"
 #include <cstddef>
 #include <iostream>
 #include <sys/wait.h>
@@ -98,13 +99,12 @@ get-file-extension-from-string-in-c*/
                 execname, command.c_str(), strerror (errno));
     }else {
       //pass in the pipe, the original file and new file name
-      //cpplines (yyin, extend.c_str(), filename);
       FILE* strFile;
       string ocName = "";
       strFile = fopen((filename + ".str").c_str(), "w"); // w = write
       if(strFile == NULL){
         cerr << "FNF" << filename;
-            }
+      }
       FILE* tokFile;
       tokFile = fopen((filename + ".tok").c_str(), "w"); // w = write
       if(tokFile == NULL){
@@ -114,7 +114,12 @@ get-file-extension-from-string-in-c*/
       astFile = fopen((filename + ".ast").c_str(), "w"); // w = write
       if(strFile == NULL){
         cerr << "FNF" << filename;
-            }
+      }
+      FILE* symFile;
+      symFile = fopen((filename + ".sym").c_str(), "w"); // w = write
+      if(symFile == NULL){
+        cerr << "FNF" << filename;
+      }
       //dump tokenized output into .tok file
       lexer::newfilename (filename, tokFile);
       int yyparse_rc = yyparse();
@@ -124,21 +129,16 @@ get-file-extension-from-string-in-c*/
       else if(yyparse_rc ==1){
         cerr<< "yyparse still failed";
       }
-      
-      /*while((symbol = yylex()) != YYEOF)
-      {
-        string_set::intern(yytext);
-        lexer::dump(symbol);
-        lexer::advance();
 
-      }*/
       //dump the string set into the .str file
 
       string_set::dump (strFile);
       astree::print(astFile, parser::root, 0);
+      typecheck(symFile, parser::root);
       fclose(astFile);
       fclose(strFile);
       fclose(tokFile);
+      fclose(symFile);
       int parse_rc = yyparse();
 
       close = pclose (yyin);

@@ -4,10 +4,10 @@ VALGRIND	 = valgrind --leak-check=full --show-reachable=yes
 #Bijan  Semnani
 #Ricardo Munoz
 MKFILE	 = Makefile
-SOURCE1 = stringset.cpp main.cpp auxlib.cpp astree.cpp
+SOURCE1 = stringset.cpp main.cpp auxlib.cpp astree.cpp symtable.cpp
 SOURCE2 = lyutils.cpp yyparse.cpp yylex.cpp
 SOURCES	= ${SOURCE1} ${SOURCE2}
-HEADERS	= stringset.h auxlib.h astree.h lyutils.h yyparse.h
+HEADERS	= stringset.h auxlib.h astree.h lyutils.h yyparse.h symtable.h
 OBJECTS	= ${SOURCES:.cpp=.o}
 EXECBIN	= oc
 SRCFILES = ${HEADERS} ${SOURCES} ${MKFILE}
@@ -54,3 +54,4 @@ spotless : clean
 		- rm *.str
 		- rm *.tok
 		- rm *.ast
+		- rm *.sym
