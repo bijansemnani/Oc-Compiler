@@ -1,8 +1,8 @@
 #ifndef __AUXLIB_H__
 #define __AUXLIB_H__
-using namespace std;
 #include <stdarg.h>
 #include <string>
+using namespace std;
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
 // DESCRIPTION

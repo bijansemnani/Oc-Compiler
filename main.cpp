@@ -13,7 +13,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
 #include "astree.h"
 #include "auxlib.h"
 #include "lyutils.h"
@@ -22,14 +21,47 @@
 
 using namespace std;
 
+//global variables
 const string CPP = "/usr/bin/cpp";
+int exit_status = EXIT_SUCCESS;
 string command = ""; //the input string on command line
+string file = "";// the inputed .oc file
+string extend = "";// original file extension .oc
+string filename = "";
+char* orgFile = NULL;
 FILE* astFile;
 FILE* symFile;
 FILE* strFile;
 FILE* tokFile;
+
+//Method declarations
 FILE* getfile(FILE* filename, string file, string extension);
 void debugOpt(int argc, char** argv);
+string getExtend(string file);
+string getFilename(string file, string extension);
+
+//Method to get filename
+string getFilename(string file, string extension){
+  string filename = "";// the name of the file
+  if(extension == "oc"){
+    filename = file.substr(0,file.size()-3);
+  } else {
+    fprintf(stderr, "incorrect file type: %s\n",extend.c_str());
+    exit_status = EXIT_FAILURE;
+    printf("exit status = %d\n", exit_status);
+    }
+  return filename;
+}
+
+//Method to get file extension
+string getExtend(string file){
+  string ext = "";
+  /*got from http://stackoverflow.com/questions/51949/how-to-
+    get-file-extension-from-string-in-c*/
+  if(file.find_last_of(".") != std::string::npos)
+    ext = file.substr(file.find_last_of(".")+1);
+  return ext;
+}
 
 //Gets the file name with correct extension for each file needed
 FILE* getfile(FILE* filename,string file, string extension){
@@ -40,6 +72,7 @@ FILE* getfile(FILE* filename,string file, string extension){
   return filename;
 }
 
+//Method for debug options
 void debugOpt(int argc, char** argv){
   int c = 0;
   yy_flex_debug = 0;
@@ -58,86 +91,77 @@ void debugOpt(int argc, char** argv){
 }
 
 int main (int argc, char** argv) {
-   int exit_status = EXIT_SUCCESS;
-   char* orgFile = NULL;
-   debugOpt(argc, argv);
-   int index = 0;
-   string file = "";// the inputed .oc file
-   string extend = "";// original file extension .oc
-   string filename = "";// the name of the file
-   for (index = optind; index < argc; index++){
-     file = argv[index];
-  }
-    /*got from http://stackoverflow.com/questions/51949/how-to-
-      get-file-extension-from-string-in-c*/
-    if(file.find_last_of(".") != std::string::npos){
-      extend = file.substr(file.find_last_of(".")+1);
-    }
-    //set execname
-    orgFile = strdup(file.c_str());
-    set_execname(orgFile);
+  debugOpt(argc, argv);
+  for (int index = optind; index < argc; index++)
+    file = argv[index];
 
-    if(extend == "oc"){
-      filename = file.substr(0,file.size()-3);
-    } else {
-      fprintf(stderr, "incorrect file type: %s\n",extend.c_str());
+  //set execname
+  orgFile = strdup(file.c_str());
+  set_execname(orgFile);
+
+  //set file extension
+  extend = getExtend(file);
+
+  //set filename
+  filename = getFilename(file,extend);
+  if(exit_status == EXIT_FAILURE) return EXIT_FAILURE;
+
+  //begin tokenizing process
+  const char* execname = basename (argv[0]);
+  char* unfree = strdup(file.c_str());
+  string newCPP = CPP + " " + unfree;
+  int close = 0;
+
+  //open a pipe to pass the file through
+  yyin = popen (newCPP.c_str(), "r");
+  if (yyin == NULL) {
+     exit_status = EXIT_FAILURE;
+     fprintf (stderr, "%s: %s: %s\n",
+              execname, command.c_str(), strerror (errno));
+  }else {
+
+    //get filenames with correct file extension
+    strFile = getfile(strFile,filename,".str");
+    tokFile = getfile(tokFile,filename,".tok");
+    astFile = getfile(astFile,filename,".ast");
+    symFile = getfile(symFile,filename,".sym");
+
+    //dump tokenized output into .tok file
+    lexer::newfilename (filename, tokFile);
+    int yyparse_rc = yyparse();
+    if(yyparse_rc ==2){
+      cerr<< "yyparse failed";
+    }
+    else if(yyparse_rc ==1) cerr<< "yyparse still failed";
+
+    //dump the string set into the .str file
+    string_set::dump (strFile);
+    astree::print(astFile, parser::root, 0);
+    typecheck(symFile, parser::root);
+
+    //close all files
+    fclose(astFile);
+    fclose(strFile);
+    fclose(tokFile);
+    fclose(symFile);
+
+    close = pclose (yyin);
+    yylex_destroy();
+
+    //check if YYin closed/flag check
+    if (close !=0){
+      cerr << "YYin did not close \n"<< close;
       exit_status = EXIT_FAILURE;
-      printf("exit status = %d\n", exit_status);
-      return EXIT_FAILURE;
     }
-    //begin tokenizing process
-    const char* execname = basename (argv[0]);
-    char* unfree = strdup(file.c_str());
-    string newCPP = CPP + " " + unfree;
-    int close = 0;
-
-    //open a pipe to pass the file through
-    yyin = popen (newCPP.c_str(), "r");
-    if (yyin == NULL) {
-       exit_status = EXIT_FAILURE;
-       fprintf (stderr, "%s: %s: %s\n",
-                execname, command.c_str(), strerror (errno));
-    }else {
-      //get filenames with correct file extension
-      strFile = getfile(strFile,filename,".str");
-      tokFile = getfile(tokFile,filename,".tok");
-      astFile = getfile(astFile,filename,".ast");
-      symFile = getfile(symFile,filename,".sym");
-
-      //dump tokenized output into .tok file
-      lexer::newfilename (filename, tokFile);
-      int yyparse_rc = yyparse();
-      if(yyparse_rc ==2){
-        cerr<< "yyparse failed";
-      }
-      else if(yyparse_rc ==1){
-        cerr<< "yyparse still failed";
-      }
-
-      //dump the string set into the .str file
-      string_set::dump (strFile);
-      astree::print(astFile, parser::root, 0);
-      typecheck(symFile, parser::root);
-      fclose(astFile);
-      fclose(strFile);
-      fclose(tokFile);
-      fclose(symFile);
-      int parse_rc = yyparse();
-      close = pclose (yyin);
-      yylex_destroy();
-      if (close !=0){
-        cerr << "YYin did not close \n"<< close;
-        exit_status = EXIT_FAILURE;
-      }
-      if (yydebug or yy_flex_debug) {
-        fprintf (stderr, "Dumping parser::root:\n");
-        if (parser::root != nullptr) parser::root->dump_tree (stderr);
-        fprintf (stderr, "Dumping string_set:\n");
-        string_set::dump (stderr);
-      }
-      if (parse_rc != 0) {
-        errprintf ("parse failed (%d)\n", parse_rc);
-        exit_status = EXIT_FAILURE;
+    if (yydebug or yy_flex_debug) {
+      fprintf (stderr, "Dumping parser::root:\n");
+      if (parser::root != nullptr) parser::root->dump_tree (stderr);
+      fprintf (stderr, "Dumping string_set:\n");
+      string_set::dump (stderr);
+    }
+    if (yyparse_rc != 0) {
+      errprintf ("parse failed (%d)\n", yyparse_rc);
+      exit_status = EXIT_FAILURE;
     }
  }
  free(unfree);

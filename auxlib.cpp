@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 
 #include "auxlib.h"
-
+using namespace std;
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
 string exec::execname;
