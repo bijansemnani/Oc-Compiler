@@ -18,11 +18,21 @@ using namespace std;
 #include <iostream>
 #include <sys/wait.h>
 
-
-
-
 const string CPP = "/usr/bin/cpp";
-const size_t LINESIZE = 1024;
+FILE* astFile;
+FILE* symFile;
+FILE* strFile;
+FILE* tokFile;
+FILE* getfile(FILE* filename, string file, string extension);
+
+//Gets the file name with correct extension for each file needed
+FILE* getfile(FILE* filename,string file, string extension){
+  filename = fopen((file + extension).c_str(), "w"); // w = write
+  if(filename == NULL){
+    cerr << "FNF" << filename;
+  }
+  return filename;
+}
 
 //Bijan Semnani bsemnani
 //Ricardo Munoz riamunoz
@@ -98,28 +108,12 @@ get-file-extension-from-string-in-c*/
        fprintf (stderr, "%s: %s: %s\n",
                 execname, command.c_str(), strerror (errno));
     }else {
-      //pass in the pipe, the original file and new file names
-      FILE* strFile;
-      string ocName = "";
-      strFile = fopen((filename + ".str").c_str(), "w"); // w = write
-      if(strFile == NULL){
-        cerr << "FNF" << filename;
-      }
-      FILE* tokFile;
-      tokFile = fopen((filename + ".tok").c_str(), "w"); // w = write
-      if(tokFile == NULL){
-        cerr << "FNF" << filename;
-      }
-      FILE* astFile;
-      astFile = fopen((filename + ".ast").c_str(), "w"); // w = write
-      if(astFile == NULL){
-        cerr << "FNF" << filename;
-      }
-      FILE* symFile;
-      symFile = fopen((filename + ".sym").c_str(), "w"); // w = write
-      if(symFile == NULL){
-        cerr << "FNF" << filename;
-      }
+      //get filenames with correct file extension
+      strFile = getfile(strFile,filename,".str");
+      tokFile = getfile(tokFile,filename,".tok");
+      astFile = getfile(astFile,filename,".ast");
+      symFile = getfile(symFile,filename,".sym");
+
       //dump tokenized output into .tok file
       lexer::newfilename (filename, tokFile);
       int yyparse_rc = yyparse();
