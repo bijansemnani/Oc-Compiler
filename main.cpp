@@ -1,29 +1,35 @@
+//Bijan Semnani bsemnani
+//Ricardo Munoz riamunoz
 #include <string>
-using namespace std;
+#include <cstddef>
+#include <iostream>
 #include <ctype.h>
-#include <libgen.h>
 #include <errno.h>
-#include <assert.h>
 #include <stdio.h>
+#include <libgen.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <unistd.h>
-#include "stringset.h"
-#include "auxlib.h"
-#include "lyutils.h"
-#include "astree.h"
-#include "symtable.h"
-#include <cstddef>
-#include <iostream>
 #include <sys/wait.h>
 
+#include "astree.h"
+#include "auxlib.h"
+#include "lyutils.h"
+#include "symtable.h"
+#include "stringset.h"
+
+using namespace std;
+
 const string CPP = "/usr/bin/cpp";
+string command = ""; //the input string on command line
 FILE* astFile;
 FILE* symFile;
 FILE* strFile;
 FILE* tokFile;
 FILE* getfile(FILE* filename, string file, string extension);
+void debugOpt(int argc, char** argv);
 
 //Gets the file name with correct extension for each file needed
 FILE* getfile(FILE* filename,string file, string extension){
@@ -34,39 +40,27 @@ FILE* getfile(FILE* filename,string file, string extension){
   return filename;
 }
 
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+void debugOpt(int argc, char** argv){
+  int c = 0;
+  yy_flex_debug = 0;
+  yydebug = 0;
+  while ((c = getopt (argc, argv, "@:D:ly")) != -1)
+  switch (c)
+    {
+    case '@': set_debugflags (optarg);         break;
+    case 'D': command = optarg;                break;
+    case 'l': yy_flex_debug = 1;               break;
+    case 'y': yydebug = 1;                     break;
+    case '?': cerr << "not known: -"<< optopt; break;
+    }
+    printf ("yy_flex_debug = %d|yydebug = %d|@value = %s|D = %s\n",
+    yy_flex_debug, yydebug, optarg,command.c_str());
+}
 
 int main (int argc, char** argv) {
-  int exit_status = EXIT_SUCCESS;
-   string command = ""; //the input string on command line
-   int c = 0;
-   yy_flex_debug = 0;
-   yydebug = 0;
+   int exit_status = EXIT_SUCCESS;
    char* orgFile = NULL;
-
-   while ((c = getopt (argc, argv, "@:D:ly")) != -1)
-   switch (c)
-     {
-     case '@':
-       set_debugflags (optarg);
-       break;
-     case 'D':
-       command = optarg;
-       break;
-     case 'l':
-       yy_flex_debug = 1;
-       break;
-     case 'y':
-       yydebug = 1;
-       break;
-     case '?':
-        cerr << "not known: -"<< optopt;
-      break;
-     }
-     printf ("yy_flex_debug = %d|yydebug = %d|@value = %s|D = %s\n",
-     yy_flex_debug, yydebug, optarg,
-     command.c_str());
+   debugOpt(argc, argv);
    int index = 0;
    string file = "";// the inputed .oc file
    string extend = "";// original file extension .oc
@@ -74,11 +68,10 @@ int main (int argc, char** argv) {
    for (index = optind; index < argc; index++){
      file = argv[index];
   }
-/*got from http://stackoverflow.com/questions/51949/how-to-
-get-file-extension-from-string-in-c*/
+    /*got from http://stackoverflow.com/questions/51949/how-to-
+      get-file-extension-from-string-in-c*/
     if(file.find_last_of(".") != std::string::npos){
       extend = file.substr(file.find_last_of(".")+1);
-
     }
     //set execname
     orgFile = strdup(file.c_str());
@@ -92,8 +85,6 @@ get-file-extension-from-string-in-c*/
       printf("exit status = %d\n", exit_status);
       return EXIT_FAILURE;
     }
-
-
     //begin tokenizing process
     const char* execname = basename (argv[0]);
     char* unfree = strdup(file.c_str());
@@ -102,7 +93,6 @@ get-file-extension-from-string-in-c*/
 
     //open a pipe to pass the file through
     yyin = popen (newCPP.c_str(), "r");
-
     if (yyin == NULL) {
        exit_status = EXIT_FAILURE;
        fprintf (stderr, "%s: %s: %s\n",
@@ -125,7 +115,6 @@ get-file-extension-from-string-in-c*/
       }
 
       //dump the string set into the .str file
-
       string_set::dump (strFile);
       astree::print(astFile, parser::root, 0);
       typecheck(symFile, parser::root);
@@ -134,14 +123,12 @@ get-file-extension-from-string-in-c*/
       fclose(tokFile);
       fclose(symFile);
       int parse_rc = yyparse();
-
       close = pclose (yyin);
       yylex_destroy();
       if (close !=0){
         cerr << "YYin did not close \n"<< close;
         exit_status = EXIT_FAILURE;
       }
-
       if (yydebug or yy_flex_debug) {
         fprintf (stderr, "Dumping parser::root:\n");
         if (parser::root != nullptr) parser::root->dump_tree (stderr);
@@ -151,10 +138,7 @@ get-file-extension-from-string-in-c*/
       if (parse_rc != 0) {
         errprintf ("parse failed (%d)\n", parse_rc);
         exit_status = EXIT_FAILURE;
-
     }
-
-
  }
  free(unfree);
  free(orgFile);
