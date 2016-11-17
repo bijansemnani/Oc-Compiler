@@ -12,8 +12,33 @@
 #include "stringset.h"
 #include "lyutils.h"
 
-astree::astree (int symbol_, const location& lloc_, const char* info) {
+location function_lloc = {0,0,0};
+location prototype_lloc = {0,0,0};
+bool func_lloc = false;
+bool pro_lloc = false;
+astree::astree (int symbol_, const location& lloc_, const char* info):
+  attributes(0), blocknr(0), struct_table(nullptr)
+ {
    symbol = symbol_;
+   if(strcmp(get_yytname(symbol), "TOK_FUNCTION")== 0){
+     if(!func_lloc){
+       function_lloc = lloc_;
+       func_lloc = true;
+     }
+     lloc = function_lloc;
+     lexinfo = string_set::intern (info);
+     return;
+
+   }else if(strcmp(get_yytname(symbol), "TOK_PROTOTYPE")== 0){
+     if(!pro_lloc){
+       prototype_lloc = lloc_;
+       pro_lloc = true;
+     }
+     lloc = prototype_lloc;
+     lexinfo = string_set::intern (info);
+     return;
+   }
+
    lloc = lloc_;
    lexinfo = string_set::intern (info);
    //lexer::dump(symbol);

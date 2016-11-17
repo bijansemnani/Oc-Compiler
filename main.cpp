@@ -98,7 +98,7 @@ get-file-extension-from-string-in-c*/
        fprintf (stderr, "%s: %s: %s\n",
                 execname, command.c_str(), strerror (errno));
     }else {
-      //pass in the pipe, the original file and new file name
+      //pass in the pipe, the original file and new file names
       FILE* strFile;
       string ocName = "";
       strFile = fopen((filename + ".str").c_str(), "w"); // w = write
@@ -112,7 +112,7 @@ get-file-extension-from-string-in-c*/
       }
       FILE* astFile;
       astFile = fopen((filename + ".ast").c_str(), "w"); // w = write
-      if(strFile == NULL){
+      if(astFile == NULL){
         cerr << "FNF" << filename;
       }
       FILE* symFile;

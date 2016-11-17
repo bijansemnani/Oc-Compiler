@@ -6,15 +6,29 @@
 
 #include <string>
 #include <vector>
+#include <bitset>
+#include <unordered_map>
 using namespace std;
 
 #include "auxlib.h"
+
+typedef enum {
+    ATTR_void, ATTR_bool, ATTR_char, ATTR_int, ATTR_null,
+    ATTR_string, ATTR_struct, ATTR_array, ATTR_function,
+    ATTR_variable, ATTR_field, ATTR_typeid, ATTR_param, ATTR_lval,
+    ATTR_const, ATTR_vreg, ATTR_vaddr, ATTR_bitset_size,
+}Flags;
+
+struct symbol;
+using symbol_table = unordered_map<const string*, symbol*>;
+using attr_bitset = bitset<ATTR_bitset_size>;
 
 struct location {
    size_t filenr;
    size_t linenr;
    size_t offset;
 };
+// Create a shorthand notation for the bitset
 
 struct astree {
 
@@ -23,6 +37,9 @@ struct astree {
    location lloc;            // source location
    const string* lexinfo;    // pointer to lexical information
    vector<astree*> children; // children of this n-way node
+   attr_bitset attributes;
+   size_t blocknr;
+   symbol_table* struct_table;
 
    // Functions.
    astree (int symbol, const location&, const char* lexinfo);
