@@ -88,6 +88,14 @@ void debugOpt(int argc, char** argv){
     }
     printf ("yy_flex_debug = %d|yydebug = %d|@value = %s|D = %s\n",
     yy_flex_debug, yydebug, optarg,command.c_str());
+
+    //flag check
+    if (yydebug or yy_flex_debug) {
+      fprintf (stderr, "Dumping parser::root:\n");
+      if (parser::root != nullptr) parser::root->dump_tree (stderr);
+      fprintf (stderr, "Dumping string_set:\n");
+      string_set::dump (stderr);
+    }
 }
 
 int main (int argc, char** argv) {
@@ -148,24 +156,19 @@ int main (int argc, char** argv) {
     close = pclose (yyin);
     yylex_destroy();
 
-    //check if YYin closed/flag check
+    //check if YYin closed
     if (close !=0){
       cerr << "YYin did not close \n"<< close;
       exit_status = EXIT_FAILURE;
     }
-    if (yydebug or yy_flex_debug) {
-      fprintf (stderr, "Dumping parser::root:\n");
-      if (parser::root != nullptr) parser::root->dump_tree (stderr);
-      fprintf (stderr, "Dumping string_set:\n");
-      string_set::dump (stderr);
-    }
+
     if (yyparse_rc != 0) {
-      errprintf ("parse failed (%d)\n", yyparse_rc);
+      cerr << "parse failed (%d)\n"<< yyparse_rc;
       exit_status = EXIT_FAILURE;
     }
  }
  free(unfree);
  free(orgFile);
- printf("exit status = %d\n", exit_status);
+ cout << "exit status = " << exit_status << endl;
  return exit_status;
 }
