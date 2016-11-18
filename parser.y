@@ -212,7 +212,7 @@ while    : TOK_WHILE '(' expr ')' statement
                 }
          ;
 
-ifelse    : TOK_IF '(' expr ')' statement
+ifelse    : TOK_IF '(' expr ')' statement %prec TOK_ELSE
                 {
                   astree::astreeFree($2);
                   astree::astreeFree($4);
@@ -241,9 +241,7 @@ return    : TOK_RETURN ';'
                 }
           ;
 
-expr      : expr BIONOP expr    { $$ = astree::adoptTwo($1, $2, $3); }
-          | UNOP expr           { $$ = astree::adoptOne($1, $2); }
-          | allocator           { $$ = $1; }
+expr      : allocator           { $$ = $1; }
           | call                { $$ = $1; }
           | '(' expr ')'
                                 {
@@ -253,28 +251,34 @@ expr      : expr BIONOP expr    { $$ = astree::adoptTwo($1, $2, $3); }
                                 }
           | variable            { $$ = $1; }
           | constant            { $$ = $1; }
-          ;
 
-BIONOP    : TOK_GT              { $$ = $1; }
-          | TOK_LT              { $$ = $1; }
-          | TOK_LE              { $$ = $1; }
-          | TOK_GE              { $$ = $1; }
-          | TOK_EQ              { $$ = $1; }
-          | TOK_NE              { $$ = $1; }
-          | '+'                 { $$ = $1; }
-          | '-'                 { $$ = $1; }
-          | '/'                 { $$ = $1; }
-          | '*'                 { $$ = $1; }
-          | '='                 { $$ = $1; }
-          ;
 
-UNOP      : TOK_POS             { $$ = $1; }
-          | TOK_NEG             { $$ = $1; }
-          | '!'                 { $$ = $1; }
-          | TOK_NEW             { $$ = $1; }
+          | expr TOK_GT expr    { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr TOK_LT expr    { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr TOK_LE expr    { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr TOK_GE expr    { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr TOK_EQ expr    { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr TOK_NE expr    { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr '+' expr       { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr '-' expr       { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr '/' expr       { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr '*' expr       { $$ = astree::adoptTwo($2,$1,$3); }
+          | expr '=' expr       { $$ = astree::adoptTwo($2,$1,$3); }
+          | '+' expr %prec TOK_POS
+                                {
+                                  $$ = $1;
+                                }
+          | '-' expr %prec TOK_NEG
+                                {
+                                  $$ = $1;
+                                }
+          | '!' expr            { $$ = astree::adoptOne($1,$2); }
+          | TOK_ORD expr        { $$ = $1; }
           | TOK_CHR             { $$ = $1; }
-          | TOK_ORD             { $$ = $1; }
+          | TOK_NEW             { $$ = $1; }
           ;
+
+
 
 allocator : TOK_NEW TOK_IDENT '(' ')'
                 {

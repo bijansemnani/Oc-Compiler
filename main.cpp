@@ -63,7 +63,7 @@ string getExtend(string file){
   return ext;
 }
 
-//Gets the file name with correct extension for each file needed
+//Method to open new file with new extension
 FILE* getfile(FILE* filename,string file, string extension){
   filename = fopen((file + extension).c_str(), "w"); // w = write
   if(filename == NULL){
