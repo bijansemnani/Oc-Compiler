@@ -1,3 +1,5 @@
+//Bijan Semnani bsemnani
+//Ricardo Munoz riamunoz
 #include <bitset>
 #include <iostream>
 #include <string>
@@ -14,7 +16,7 @@ using namespace std;
 symbol* createSym(astree* node, size_t next_block);
 
 vector<symbol_table*> symbol_stack;
-symbol_table* structTable;
+symbol_table* structTable = new symbol_table;
 size_t next_block = 1;
 
 //=============== SYMBOL TABLE ================= //
@@ -115,7 +117,10 @@ bool checkComp(astree* node1, astree* node2){
        boolVal = false;
     switch(node1->symbol){
       case TOK_FUNCTION:
-        checkStructural(node1,node2);
+        boolVal = checkStructural(node1,node2);
+        break;
+      case TOK_PROTOTYPE:
+        boolVal = checkStructural(node1,node2);
         break;
       case TOK_VOID:        break;
         boolVal = false;
@@ -185,7 +190,7 @@ void copyType(astree* parent, astree* child){
 
 void typecheck_node(FILE* outfile, astree* node)
 {
-  fprintf(outfile, "%s\n", node->lexinfo->c_str() );
+  printf("%s\n", node->lexinfo->c_str() );
   astree *left;
   astree *right;
   symbol* sym;
@@ -197,9 +202,8 @@ void typecheck_node(FILE* outfile, astree* node)
     if(node->children[1]){
       right = node->children[1];
     }
+  }
     switch(node->symbol){
-      case TOK_STRUCT:
-
       case TOK_VOID:
         left->attributes.set(ATTR_void);    break;
       case TOK_CHAR:
@@ -215,10 +219,81 @@ void typecheck_node(FILE* outfile, astree* node)
           left->attributes.set(ATTR_string);
         copyType(node, left);               break;
       case TOK_IF:
-      case TOK_IFELSE:                      break;
-
+      case TOK_IFELSE:
+        if(!left->attributes.test(ATTR_bool))
+          errprintf ("Error bust be a bool expr (%zu.%zu.%zu) ",
+          node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
+                                            break;
+      case TOK_WHILE:
+        if(!left->attributes.test(ATTR_bool))
+        errprintf ("Error bust be a bool expr (%zu.%zu.%zu) ",
+        node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
+                                            break;
+      case TOK_RETURN:                      break;
+      case TOK_STRUCT:/* WRITE!!!! */       break;
+      case TOK_TRUE:
+      case TOK_FALSE:
+        node->attributes.set(ATTR_bool);
+        node->attributes.set(ATTR_const);   break;
+      case TOK_NULL:
+        node->attributes.set(ATTR_null);
+        node->attributes.set(ATTR_const);   break;
+      case TOK_NEW:
+        copyAttr(node, left);               break;
+      case TOK_ARRAY:
+        left->attributes.set(ATTR_array);
+        if(left == nullptr || left->children.empty())
+          left->children[0]->attributes.set(ATTR_array);
+                                            break;
+      case TOK_EQ:
+      case TOK_NE:
+      case TOK_LT:
+      case TOK_LE:
+      case TOK_GT:
+      case TOK_GE:
+        if(checkComp(left, right)){
+          node->attributes.set(ATTR_int);
+          node->attributes.set(ATTR_vreg);
+        } else{
+          errprintf ("Error (%zu.%zu.%zu) ",
+          node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
+        }                                   break;
+      case TOK_IDENT:
+        sym = find_ident(node);
+        if(sym == nullptr){
+          search_symbol(structTable,node);
+        }
+        if(sym == nullptr){
+          errprintf ("Not defined or out of scope (%zu.%zu.%zu): %s ",
+          node->lloc.filenr, node->lloc.linenr,node->lloc.offset,
+          node->lexinfo->c_str());
+          break;
+        }
+        node->attributes = sym->attributes;
+                                            break;
+      case TOK_INTCON:
+      case TOK_CHARCON:
+        node->attributes.set(ATTR_int);
+        node->attributes.set(ATTR_const);
+                                            break;
+      case TOK_STRINGCON:
+        node->attributes.set(ATTR_string);
+        node->attributes.set(ATTR_const);   break;
+      case TOK_CALL:
+        sym = search_symbol(symbol_stack[0], node->children.back());
+        if(sym == nullptr){
+          errprintf ("Not defined or out of scope (%zu.%zu.%zu): %s ",
+          node->lloc.filenr, node->lloc.linenr,node->lloc.offset,
+          node->children.back()->lexinfo->c_str());
+          break;
+        }
+        for(size_t i = 0; i<ATTR_function; i++){
+          if(sym->attributes[i] == 1)
+            node->attributes.set(i);
+        }
+        break;
     }
-  }
+
 }
 
 void recr_typecheck(FILE* outfile, astree* node)
