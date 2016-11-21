@@ -111,12 +111,53 @@ void astree::print (FILE* outfile, astree* tree, int depth) {
    if (strstr (tname, "TOK_") == tname)
       tname += 4;
    for(int i = 0; i< depth; i++) fprintf(outfile, "|%s", " ");
-   fprintf (outfile, "%s \"%s\" (%zd.%zd.%zd) {%zu}\n",
+   fprintf (outfile, "%s \"%s\" (%zd.%zd.%zd) {%zu}",
             tname, tree->lexinfo->c_str(),
-            tree->lloc.filenr, tree->lloc.linenr, tree->lloc.offset,tree->blocknr);
+            tree->lloc.filenr, tree->lloc.linenr,
+            tree->lloc.offset,tree->blocknr);
+   fprintf(outfile, "%s \n",ATtoST(tree).c_str());
    for (astree* child: tree->children) {
       astree::print (outfile, child, depth + 1);
    }
+}
+string astree::ATtoST(astree* node){
+  string attr = "";
+  if(node->attributes.test(ATTR_void))
+    attr += "void ";
+  if(node->attributes.test(ATTR_bool))
+    attr += "bool ";
+  if(node->attributes.test(ATTR_char))
+    attr += "char ";
+  if(node->attributes.test(ATTR_int ))
+    attr += "char ";
+  if(node->attributes.test(ATTR_null ))
+    attr += "null ";
+  if(node->attributes.test(ATTR_string ))
+    attr += "string ";
+  if(node->attributes.test(ATTR_struct ))
+    attr += "struct ";
+  if(node->attributes.test(ATTR_array ))
+    attr += "array ";
+  if(node->attributes.test(ATTR_function ))
+    attr += "function ";
+  if(node->attributes.test(ATTR_variable ))
+    attr += "variable ";
+  if(node->attributes.test(ATTR_field ))
+    attr += "field ";
+  if(node->attributes.test(ATTR_typeid ))
+    attr += "typeid ";
+  if(node->attributes.test(ATTR_param ))
+    attr += "param ";
+  if(node->attributes.test(ATTR_lval ))
+    attr += "lval ";
+  if(node->attributes.test(ATTR_const ))
+    attr += "const ";
+  if(node->attributes.test(ATTR_vreg ))
+    attr += "vreg ";
+  if(node->attributes.test(ATTR_vaddr ))
+    attr += "vaddr ";
+
+    return attr;
 }
 
 void destroy (astree* tree1, astree* tree2) {

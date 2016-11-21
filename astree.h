@@ -50,6 +50,7 @@ struct astree {
    static astree* adoptThree (astree* child1,
      astree* child2, astree* child3, astree* child4);
    static astree* adopt_sym (astree* child, int symbol);
+   static string ATtoST(astree* node);
    void dump_node (FILE*);
    void dump_tree (FILE*, int depth = 0);
    static void dump (FILE* outfile, astree* tree);

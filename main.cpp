@@ -92,7 +92,7 @@ void debugOpt(int argc, char** argv){
     //flag check
     if (yydebug or yy_flex_debug) {
       fprintf (stderr, "Dumping parser::root:\n");
-      if (parser::root != nullptr) parser::root->dump_tree (stderr);
+      if (lexer::root != nullptr) lexer::root->dump_tree (stderr);
       fprintf (stderr, "Dumping string_set:\n");
       string_set::dump (stderr);
     }
@@ -144,8 +144,9 @@ int main (int argc, char** argv) {
 
     //dump the string set into the .str file
     string_set::dump (strFile);
-    astree::print(astFile, parser::root, 0);
-    typecheck(symFile, parser::root);
+    typecheck(symFile, lexer::root);
+    astree::print(astFile, lexer::root, 0);
+
 
     //close all files
     fclose(astFile);

@@ -21,7 +21,7 @@
 %printer { astree::dump (yyoutput, $$); } <>
 
 %initial-action {
-   parser::root = new astree (TOK_ROOT, {0, 0, 0}, "<<ROOT>>");
+   lexer::root = new astree (TOK_ROOT, {0, 0, 0}, "<<ROOT>>");
 }
 
 
@@ -39,6 +39,7 @@
 %token TOK_CALL TOK_NEWSTRING TOK_IFELSE TOK_RETURNVOID
 %token TOK_BLOCK TOK_VARDECL TOK_FUNCTION TOK_PARAMLIST TOK_PROTOTYPE
 
+%nonassoc then
 %right  TOK_IF TOK_ELSE
 %right  '='
 %left   TOK_EQ TOK_NE TOK_LT TOK_LE TOK_GT TOK_GE
@@ -52,7 +53,7 @@
 %start start
 
 %%
-start    : program              { parser::root = $1; }
+start    : program              { lexer::root = $1; }
          ;
 
 program  : program structdef    { $$ = astree::adoptOne ($1, $2); }
@@ -60,7 +61,7 @@ program  : program structdef    { $$ = astree::adoptOne ($1, $2); }
          | program statement    { $$ = astree::adoptOne ($1, $2); }
          | program error '}'    { $$ = $1; }
          | program error ';'    { $$ = $1; }
-         |                      { $$ = parser::root; }
+         |                      { $$ = lexer::root; }
          ;
 
 structdef: TOK_STRUCT TOK_IDENT '{' '}'
@@ -92,7 +93,7 @@ field    : '{' fielddecl ';'
 fielddecl: basetype TOK_ARRAY TOK_IDENT
               {
                 $3 = astree::adopt_sym($3, TOK_TYPEID);
-                $$ = astree::adoptTwo($1, $2, $3);
+                $$ = astree::adoptTwo($2, $1, $3);
               }
 
          | basetype TOK_IDENT
@@ -154,7 +155,7 @@ param    : '(' identdecl
 identdecl: basetype TOK_ARRAY TOK_IDENT
                 {
                   $3 = astree::adopt_sym($3, TOK_DECLID);
-                  $$ = astree::adoptTwo($1, $2, $3);
+                  $$ = astree::adoptTwo($2, $1, $3);
                 }
          | basetype TOK_IDENT
                 {
@@ -200,7 +201,7 @@ vardecl  : identdecl '=' expr ';'
                 {
                   astree::astreeFree($4);
                   $2 = astree::adopt_sym($2, TOK_VARDECL);
-                  $$ = astree::adoptTwo($1, $2, $3);
+                  $$ = astree::adoptTwo($2, $1, $3);
                 }
          ;
 

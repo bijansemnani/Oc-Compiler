@@ -15,7 +15,7 @@ location lexer::lloc = {0, 1, 0};
 size_t lexer::last_yyleng = 0;
 vector<string> lexer::filenames;
 FILE* lexer::tokFile;
-astree* parser::root = nullptr;
+astree* lexer::root = nullptr;
 
 
 const string* lexer::filename (int filenr) {

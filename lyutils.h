@@ -37,6 +37,7 @@ struct lexer {
    static vector<string> filenames;
    static const string* filename (int filenr);
    static FILE* tokFile;
+   static astree* root;
    static void newfilename (const string& filename, FILE* tok);
    static void advance();
    static void newline();

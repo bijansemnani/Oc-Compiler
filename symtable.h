@@ -29,3 +29,6 @@ void typecheck_node(FILE* outfile, astree* node);
 void copyAttr(astree* parent, astree* child);
 bool checkComp(astree* node1, astree* node2);
 bool checkStructural(astree* node1, astree* node2);
+void blockCheck(astree* node);
+void checkPro(FILE* outFile, astree* node);
+void checkFunc(FILE* outFile, astree* node);
