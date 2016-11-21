@@ -7,10 +7,11 @@ MKFILE	 = Makefile
 SOURCE1 = stringset.cpp main.cpp auxlib.cpp astree.cpp symtable.cpp
 SOURCE2 = lyutils.cpp yyparse.cpp yylex.cpp
 SOURCES	= ${SOURCE1} ${SOURCE2}
-HEADERS	= stringset.h auxlib.h astree.h lyutils.h yyparse.h symtable.h
+HEADERS1= stringset.h auxlib.h symtable.h
+HEADERS2= astree.h lyutils.h yyparse.h
 OBJECTS	= ${SOURCES:.cpp=.o}
 EXECBIN	= oc
-SRCFILES = ${HEADERS} ${SOURCES} ${MKFILE}
+SRCFILES = ${HEADERS1} ${HEADERS2} ${SOURCES} ${MKFILE}
 
 LSOURCES	= scanner.l
 YSOURCES	= parser.y

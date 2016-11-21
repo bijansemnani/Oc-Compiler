@@ -32,3 +32,4 @@ bool checkStructural(astree* node1, astree* node2);
 void blockCheck(astree* node);
 void checkPro(FILE* outFile, astree* node);
 void checkFunc(FILE* outFile, astree* node);
+void printsym(FILE* outFile, astree* node);

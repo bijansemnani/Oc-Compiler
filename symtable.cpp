@@ -17,6 +17,12 @@ symbol* createSym(astree* node, size_t next_block);
 
 vector<symbol_table*> symbol_stack;
 symbol_table* structTable = new symbol_table;
+
+//used in type check tok_struct see if struct val was
+//just called or initiallized
+symbol* foundInsert = nullptr;
+symbol* nullInsert = nullptr;
+
 size_t next_block = 1;
 
 //=============== SYMBOL TABLE ================= //
@@ -60,7 +66,6 @@ void leave_block()
 
 void define_ident(astree* node)
 {
-  cout << "here\n";
   if(symbol_stack.empty())
     symbol_stack.push_back(nullptr);
   if(symbol_stack.back() == nullptr)
@@ -90,6 +95,35 @@ void copyAttr(astree* parent, astree* child){
       parent->attributes.set(i);
   }
 }
+void printsym (FILE* outfile, astree* node) {
+  astree* current = nullptr;
+  if (node->attributes[ATTR_struct]) {
+      fprintf (outfile, "\n");
+  } else {
+      fprintf (outfile, "    ");
+  }
+
+  if (node->attributes[ATTR_field]) {
+      fprintf (outfile, "%s (%zu.%zu.%zu) field {%s} ",
+          node->lexinfo->c_str(),
+          node->lloc.linenr, node->lloc.filenr, node->lloc.offset,
+          (current->lexinfo)->c_str());
+  } else {
+      fprintf (outfile, "%s (%zu.%zu.%zu) {%zu} ",
+          (node->lexinfo)->c_str(),
+          node->lloc.linenr, node->lloc.filenr, node->lloc.offset,
+          node->blocknr);
+  }
+  if (node->attributes[ATTR_struct]) {
+        fprintf (outfile, "struct \"%s\" ",
+            (node->lexinfo)->c_str());
+        current = node;
+    }
+
+    fprintf (outfile, "%s\n", astree::ATtoST (node).c_str());
+}
+
+
 bool checkStructural(astree* node1, astree* node2){
   bool returnVal = false;
   if(node1->attributes.test(ATTR_function) ^
@@ -121,7 +155,7 @@ void blockCheck(astree* node){
 void checkPro(FILE* outFile, astree* node){
   node->children[0]->children[0]->attributes.set (ATTR_function);
   insert_symbol (symbol_stack[0], node->children[0]->children[0]);
-    //print_symbol (symbol_stack[0], node->children[0]->children[0]);
+  printsym (outFile, node->children[0]->children[0]);
   enter_block();
   for (auto child : node->children[1]->children) {
     child->children[0]->attributes.set (ATTR_variable);
@@ -129,7 +163,7 @@ void checkPro(FILE* outFile, astree* node){
     child->children[0]->attributes.set (ATTR_param);
     child->children[0]->blocknr = next_block;
     define_ident (child);
-    //print_symbol (outfile, child->children[0]);
+    printsym (outFile, child->children[0]);
     }
   leave_block();
 }
@@ -137,7 +171,7 @@ void checkPro(FILE* outFile, astree* node){
 void checkFunc(FILE* outFile, astree* node){
   node->children[0]->children[0]->attributes.set (ATTR_function);
   insert_symbol (symbol_stack[0], node->children[0]->children[0]);
-    //print_symbol (symbol_stack[0], node->children[0]->children[0]);
+  printsym (outFile, node->children[0]->children[0]);
   enter_block();
   for (auto child : node->children[1]->children) {
     child->children[0]->attributes.set (ATTR_variable);
@@ -145,7 +179,7 @@ void checkFunc(FILE* outFile, astree* node){
     child->children[0]->attributes.set (ATTR_param);
     child->children[0]->blocknr = next_block;
     define_ident (child);
-    //print_symbol (outfile, child->children[0]);
+    printsym (outFile, child->children[0]);
     }
   blockCheck(node->children[2]);
   leave_block();
@@ -247,47 +281,77 @@ void typecheck_node(FILE* outFile, astree* node)
 
     switch(node->symbol){
       case TOK_VOID:
-        left->attributes.set(ATTR_void);    break;
+        left->attributes.set(ATTR_void);
+        break;
       case TOK_CHAR:
-        if(left == nullptr)                 break;
+        if(left == nullptr)
+          break;
         left->attributes.set(ATTR_char);
-        copyType(node, left);               break;
+        copyType(node, left);
+        break;
       case TOK_INT:
-        if(left == nullptr)                 break;
+        if(left == nullptr)
+          break;
         left->attributes.set(ATTR_int);
-        copyType(node, left);               break;
+        copyType(node, left);
+        break;
       case TOK_STRING:
-        if (left == nullptr)                break;
+        if (left == nullptr)
+          break;
         left->attributes.set(ATTR_string);
-        copyType(node, left);               break;
+        copyType(node, left);
+        break;
       case TOK_IF:
       case TOK_IFELSE:
         if(!left->attributes.test(ATTR_bool))
           errprintf ("Error bust be a bool expr (%zu.%zu.%zu)\n",
           node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
-                                            break;
+        break;
       case TOK_WHILE:
         if(!left->attributes.test(ATTR_bool))
         errprintf ("Error must be a bool expr (%zu.%zu.%zu)\n",
         node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
-                                            break;
+        break;
       case TOK_RETURN:                      break;
-      case TOK_STRUCT:/* WRITE!!!! */       break;
+      case TOK_STRUCT:
+        left->attributes.set(ATTR_struct);
+        if((*structTable)[left->lexinfo]){
+          foundInsert = createSym(left);
+          foundInsert->block_nr = 0;
+          structTable->insert(make_pair(left->lexinfo,foundInsert));
+          printsym(outFile,left);
+          //populate the struct fields
+          symbol* populate = search_symbol(structTable, left);
+          for(auto field = left->children.begin()+1;
+              field != left->children.end(); field++){
+            insert_symbol(populate->fields, *field);
+            printsym(outFile, (*field)->children[0]);
+          }
+        } else{
+          nullInsert = createSym(left);
+          nullInsert->block_nr = 0;
+          structTable->insert(make_pair(left->lexinfo,nullInsert));
+          printsym(outFile,left);
+        }
+        break;
       case TOK_TRUE:
       case TOK_FALSE:
         node->attributes.set(ATTR_bool);
-        node->attributes.set(ATTR_const);   break;
+        node->attributes.set(ATTR_const);
+        break;
       case TOK_NULL:
         node->attributes.set(ATTR_null);
-        node->attributes.set(ATTR_const);   break;
+        node->attributes.set(ATTR_const);
+        break;
       case TOK_NEW:
-        copyAttr(node, left);               break;
+        copyAttr(node, left);
+        break;
       case TOK_ARRAY:
         left->attributes.set(ATTR_array);
         if(left == nullptr || left->children.empty())
-                                            break;
+          break;
         left->children[0]->attributes.set(ATTR_array);
-                                            break;
+        break;
       case TOK_EQ:
       case TOK_NE:
       case TOK_LT:
@@ -300,7 +364,8 @@ void typecheck_node(FILE* outFile, astree* node)
         } else{
           errprintf ("Error (%zu.%zu.%zu)\n ",
           node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
-        }                                   break;
+        }
+        break;
       case TOK_IDENT:
         sym = find_ident(node);
         if(sym == nullptr){
@@ -313,15 +378,16 @@ void typecheck_node(FILE* outFile, astree* node)
           break;
         }
         node->attributes = sym->attributes;
-                                            break;
+        break;
       case TOK_INTCON:
       case TOK_CHARCON:
         node->attributes.set(ATTR_int);
         node->attributes.set(ATTR_const);
-                                            break;
+        break;
       case TOK_STRINGCON:
         node->attributes.set(ATTR_string);
-        node->attributes.set(ATTR_const);   break;
+        node->attributes.set(ATTR_const);
+        break;
       case TOK_CALL:
         sym = search_symbol(symbol_stack[0], node->children.back());
         if(sym == nullptr){
@@ -337,52 +403,60 @@ void typecheck_node(FILE* outFile, astree* node)
         break;
       case TOK_BLOCK:
         blockCheck (node);
-        leave_block();                    break;
+        leave_block();
+        break;
       case TOK_NEWARRAY:
           node->attributes.set(ATTR_vreg);
-          node->attributes.set(ATTR_array); break;
+          node->attributes.set(ATTR_array);
+          copyType(node, left);
+          break;
       case TOK_TYPEID:
-          node->attributes.set(ATTR_typeid);break;
+          node->attributes.set(ATTR_typeid);
+          break;
       case TOK_FIELD:
           node->attributes.set(ATTR_field);
           if(left != nullptr){
             left->attributes.set(ATTR_field);
             copyType(node, left);
-          }                                 break;
+          }
+          break;
       case TOK_ORD:
           node->attributes.set(ATTR_int);
           node->attributes.set(ATTR_vreg);
           if(!left->attributes[ATTR_char])
           errprintf ("Error wrong ord type (%zu.%zu.%zu): %s\n",
           node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
-                                            break;
+          break;
       case TOK_CHR:
           node->attributes.set(ATTR_char);
           node->attributes.set(ATTR_vreg);
           if(!left->attributes[ATTR_char])
           errprintf ("Error wrong chr type (%zu.%zu.%zu): %s\n",
           node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
-                                            break;
+          break;
       case TOK_ROOT:
-      case TOK_PARAMLIST:                   break;
+      case TOK_PARAMLIST:
+          break;
       case TOK_PROTOTYPE:
           checkPro(outFile, node);
-                                            break;
+          break;
       case TOK_FUNCTION:
           enter_block();
           checkFunc(outFile, node);
-          //print_symbol
-                                            break;
+          printsym(outFile, node);
+          break;
      case TOK_DECLID:
-     case TOK_INDEX:                        break;
+          break;
+     case TOK_INDEX:
           node->attributes.set(ATTR_lval);
           node->attributes.set(ATTR_vaddr);
-                                            break;
+          break;
      case TOK_NEWSTRING:
           node->attributes.set(ATTR_vreg);
           node->attributes.set(ATTR_string);
-                                            break;
-     case TOK_RETURNVOID:                   break;
+          break;
+     case TOK_RETURNVOID:
+          break;
      case TOK_VARDECL:
           left->children[0]->attributes.set(ATTR_lval);
           left->children[0]->attributes.set(ATTR_variable);
@@ -391,13 +465,14 @@ void typecheck_node(FILE* outFile, astree* node)
           errprintf ("Error (%zu.%zu.%zu), variable already declared\n",
                     node->lloc.filenr, node->lloc.linenr,
                     node->lloc.offset, left->children[0]->lexinfo);
-                                            break;
+            break;
           }
           define_ident(left->children[0]);
-            //print_symbol
-                                            break;
+          printsym(outFile, left->children[0]);
+          break;
      case '=':
-          if(left == nullptr)               break;
+          if(left == nullptr)
+            break;
           if(left->attributes[ATTR_lval]){
             copyType(node, left);
             node->attributes.set(ATTR_vreg);
@@ -405,19 +480,22 @@ void typecheck_node(FILE* outFile, astree* node)
                 errprintf ("Error (%zu.%zu.%zu), incompatiable types\n",
                     node->lloc.filenr, node->lloc.linenr,
                     node->lloc.offset);
-          }                                 break;
+          }
+          break;
      case '+':
      case '-':
           node->attributes.set(ATTR_vreg);
           node->attributes.set(ATTR_int);
           if(right == nullptr){
-            if(left == nullptr)             break;
+            if(left == nullptr)
+              break;
             if(!(left->attributes[ATTR_int])){
                 errprintf ("Error (%zu.%zu.%zu), int type required\n",
                     node->lloc.filenr, node->lloc.linenr,
                     node->lloc.offset);
             }
-          }                         break;
+          }
+          break;
      case '*':
      case '/':
      case '%':
@@ -428,7 +506,8 @@ void typecheck_node(FILE* outFile, astree* node)
                 errprintf ("Error (%zu.%zu.%zu),int type required\n",
                 node->lloc.filenr,
                 node->lloc.linenr, node->lloc.offset);
-            }                                               break;
+            }
+          break;
     case '!':
           node->attributes.set(ATTR_vreg);
           node->attributes.set(ATTR_bool);
@@ -437,16 +516,18 @@ void typecheck_node(FILE* outFile, astree* node)
                 errprintf ("Error (%zu.%zu.%zu), bool type required\n",
                 node->lloc.filenr,
                 node->lloc.linenr, node->lloc.offset);
-            }                                               break;
+            }
+          break;
    case '.':
           node->attributes.set(ATTR_lval);
           node->attributes.set(ATTR_vaddr);
           sym = search_symbol(structTable, node);
           copyType(node, left);
-                                                            break;
+          break;
   default:
           errprintf ("Error, invalid token \"%s\"",
           get_yytname (node->symbol));
+          break;
 
 
   }
