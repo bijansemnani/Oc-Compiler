@@ -11,7 +11,9 @@
 #include "lyutils.h"
 
 using namespace std;
-
+bool isFunc = false;
+const char* test = NULL;
+const string* aStruct = NULL;
 // helper function to convert node -> symbol
 symbol* createSym(astree* node, size_t next_block);
 
@@ -119,8 +121,7 @@ void printsym (FILE* outfile, astree* node) {
             (node->lexinfo)->c_str());
         current = node;
     }
-
-    fprintf (outfile, "%s\n", astree::ATtoST (node).c_str());
+  fprintf (outfile, "%s\n", astree::ATtoST (node).c_str());
 }
 
 
@@ -152,6 +153,7 @@ void blockCheck(astree* node){
   for(auto child: node->children)
     blockCheck(child);
 }
+
 void checkPro(FILE* outFile, astree* node){
   node->children[0]->children[0]->attributes.set (ATTR_function);
   insert_symbol (symbol_stack[0], node->children[0]->children[0]);
@@ -269,7 +271,7 @@ void copyType(astree* parent, astree* child){
 
 void typecheck_node(FILE* outFile, astree* node)
 {
-  cout << *(node->lexinfo) + "\n";
+  //cout << *(node->lexinfo) + " " + get_yytname(node->symbol) +"\n";
   astree *left = nullptr;
   astree *right = nullptr;
   symbol* sym = nullptr;
@@ -304,7 +306,7 @@ void typecheck_node(FILE* outFile, astree* node)
       case TOK_IF:
       case TOK_IFELSE:
         if(!left->attributes.test(ATTR_bool))
-          errprintf ("Error bust be a bool expr (%zu.%zu.%zu)\n",
+          errprintf ("Error must be a bool expr (%zu.%zu.%zu)\n",
           node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
         break;
       case TOK_WHILE:
@@ -312,18 +314,23 @@ void typecheck_node(FILE* outFile, astree* node)
         errprintf ("Error must be a bool expr (%zu.%zu.%zu)\n",
         node->lloc.filenr, node->lloc.linenr,node->lloc.offset);
         break;
-      case TOK_RETURN:                      break;
+      case TOK_RETURN:
+        break;
       case TOK_STRUCT:
         left->attributes.set(ATTR_struct);
-        if((*structTable)[left->lexinfo]){
+        aStruct = left->lexinfo;
+        cout <<get_yytname(node->symbol) << "\n";
+        cout <<*left->lexinfo << astree::ATtoST(left)<< "\n";
+        if(structTable->count(left->lexinfo) >= 1){
           foundInsert = createSym(left);
           foundInsert->block_nr = 0;
           structTable->insert(make_pair(left->lexinfo,foundInsert));
           printsym(outFile,left);
+          isFunc = true;
           //populate the struct fields
           symbol* populate = search_symbol(structTable, left);
-          for(auto field = left->children.begin()+1;
-              field != left->children.end(); field++){
+          for(auto field = right->children.begin();
+              field != right->children.end(); field++){
             insert_symbol(populate->fields, *field);
             printsym(outFile, (*field)->children[0]);
           }
@@ -332,6 +339,10 @@ void typecheck_node(FILE* outFile, astree* node)
           nullInsert->block_nr = 0;
           structTable->insert(make_pair(left->lexinfo,nullInsert));
           printsym(outFile,left);
+        }
+        if(node->attributes.test(ATTR_function)){
+          isFunc = true;
+          cout << "HELLO BEE GUY!!!!!\n";
         }
         break;
       case TOK_TRUE:
@@ -412,6 +423,13 @@ void typecheck_node(FILE* outFile, astree* node)
           break;
       case TOK_TYPEID:
           node->attributes.set(ATTR_typeid);
+          if(structTable->count(node->lexinfo)>=1){
+            break;
+          } else{
+            nullInsert = createSym(node);
+            nullInsert->block_nr = 0;
+            structTable->insert(make_pair(node->lexinfo,nullInsert));
+          }
           break;
       case TOK_FIELD:
           node->attributes.set(ATTR_field);
@@ -441,6 +459,11 @@ void typecheck_node(FILE* outFile, astree* node)
           checkPro(outFile, node);
           break;
       case TOK_FUNCTION:
+          cout <<*left->lexinfo << astree::ATtoST(left)<< "\n";
+          test = get_yytname(node->symbol);
+          if(strcmp(aStruct->c_str(),left->lexinfo->c_str()) == 0){
+            left->children[0]->attributes.set (ATTR_struct);
+          }
           enter_block();
           checkFunc(outFile, node);
           printsym(outFile, node);
@@ -525,7 +548,7 @@ void typecheck_node(FILE* outFile, astree* node)
           copyType(node, left);
           break;
   default:
-          errprintf ("Error, invalid token \"%s\"",
+          errprintf ("Error, invalid token \"%s\"\n",
           get_yytname (node->symbol));
           break;
 
@@ -543,6 +566,7 @@ void recr_typecheck(FILE* outfile, astree* node)
 
 void typecheck(FILE* outfile, astree* root)
 {
+  symbol_stack.push_back(new symbol_table);
   recr_typecheck(outfile, root);
   while(!symbol_stack.empty()) {
     leave_block();
