@@ -283,7 +283,8 @@ void typecheck_node(FILE* outFile, astree* node)
 
     switch(node->symbol){
       case TOK_VOID:
-        left->attributes.set(ATTR_void);
+        if(left)
+          left->attributes.set(ATTR_void);
         break;
       case TOK_CHAR:
         if(left == nullptr)
@@ -318,9 +319,8 @@ void typecheck_node(FILE* outFile, astree* node)
         break;
       case TOK_STRUCT:
         left->attributes.set(ATTR_struct);
+        if(left)
         aStruct = left->lexinfo;
-        cout <<get_yytname(node->symbol) << "\n";
-        cout <<*left->lexinfo << astree::ATtoST(left)<< "\n";
         if(structTable->count(left->lexinfo) >= 1){
           foundInsert = createSym(left);
           foundInsert->block_nr = 0;
@@ -329,10 +329,12 @@ void typecheck_node(FILE* outFile, astree* node)
           isFunc = true;
           //populate the struct fields
           symbol* populate = search_symbol(structTable, left);
-          for(auto field = right->children.begin();
-              field != right->children.end(); field++){
-            insert_symbol(populate->fields, *field);
-            printsym(outFile, (*field)->children[0]);
+          if(!left->children.empty()){
+            for(auto field = left->children.begin();
+                field != left->children.end(); field++){
+              insert_symbol(populate->fields, *field);
+              printsym(outFile, (*field)->children[0]);
+            }
           }
         } else{
           nullInsert = createSym(left);
@@ -379,6 +381,9 @@ void typecheck_node(FILE* outFile, astree* node)
         break;
       case TOK_IDENT:
         sym = find_ident(node);
+        //if sym not found in sym stack then not found
+        //therefore its a declare get the lloc info for
+        //printing in ast
         if(sym == nullptr){
           search_symbol(structTable,node);
         }
@@ -400,7 +405,10 @@ void typecheck_node(FILE* outFile, astree* node)
         node->attributes.set(ATTR_const);
         break;
       case TOK_CALL:
-        sym = search_symbol(symbol_stack[0], node->children.back());
+        if(node->children[0])
+          sym = search_symbol(symbol_stack[0], node->children[0]);
+        else
+          sym = search_symbol(symbol_stack[0], node->children.back());
         if(sym == nullptr){
           errprintf ("Not defined or out of scope (%zu.%zu.%zu): %s\n",
           node->lloc.filenr, node->lloc.linenr,node->lloc.offset,
@@ -459,9 +467,8 @@ void typecheck_node(FILE* outFile, astree* node)
           checkPro(outFile, node);
           break;
       case TOK_FUNCTION:
-          cout <<*left->lexinfo << astree::ATtoST(left)<< "\n";
-          test = get_yytname(node->symbol);
-          if(strcmp(aStruct->c_str(),left->lexinfo->c_str()) == 0){
+          if(aStruct){
+            if(strcmp(aStruct->c_str(),left->lexinfo->c_str()) == 0)
             left->children[0]->attributes.set (ATTR_struct);
           }
           enter_block();
@@ -534,12 +541,14 @@ void typecheck_node(FILE* outFile, astree* node)
     case '!':
           node->attributes.set(ATTR_vreg);
           node->attributes.set(ATTR_bool);
-          if (!(left->attributes[ATTR_int]) ||
-                !(right->attributes[ATTR_int])) {
-                errprintf ("Error (%zu.%zu.%zu), bool type required\n",
-                node->lloc.filenr,
-                node->lloc.linenr, node->lloc.offset);
-            }
+          if(left && right){
+            if (!(left->attributes[ATTR_int]) ||
+                  !(right->attributes[ATTR_int])) {
+                  errprintf ("Error (%zu.%zu.%zu), bool type required\n",
+                  node->lloc.filenr,
+                  node->lloc.linenr, node->lloc.offset);
+              }
+          }
           break;
    case '.':
           node->attributes.set(ATTR_lval);

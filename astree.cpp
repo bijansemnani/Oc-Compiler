@@ -115,7 +115,10 @@ void astree::print (FILE* outfile, astree* tree, int depth) {
             tname, tree->lexinfo->c_str(),
             tree->lloc.filenr, tree->lloc.linenr,
             tree->lloc.offset,tree->blocknr);
-   fprintf(outfile, "%s \n",ATtoST(tree).c_str());
+   if(tree->attributes[ATTR_struct])
+    fprintf(outfile, " \"%s\" %s\n",tree->lexinfo->c_str(),
+      ATtoST(tree).c_str());
+   fprintf(outfile, " %s\n",ATtoST(tree).c_str());
    for (astree* child: tree->children) {
       astree::print (outfile, child, depth + 1);
    }
