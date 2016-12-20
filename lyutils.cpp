@@ -1,6 +1,4 @@
-// $Id: lyutils.cpp,v 1.11 2016-10-06 16:42:53-07 - - $
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
