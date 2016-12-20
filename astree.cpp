@@ -1,6 +1,4 @@
-// $Id: astree.cpp,v 1.8 2016-09-21 17:13:03-07 - - $
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdarg.h>
