@@ -1,5 +1,4 @@
-/*Bijan Semnani bsemnani */
-/*Ricardo Munoz riamunoz */
+
 %{
 #include <stdlib.h>
 #include "auxlib.h"
