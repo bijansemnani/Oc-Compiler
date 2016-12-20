@@ -1,6 +1,5 @@
 %{
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 
 #include <cassert>
 #include <assert.h>
