@@ -4,8 +4,6 @@
 #include <string>
 #include <unordered_set>
 using namespace std;
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
 #include <stdio.h>
 
 struct string_set {
