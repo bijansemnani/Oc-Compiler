@@ -5,8 +5,7 @@ using namespace std;
 #include "stringset.h"
 
 unordered_set<string> string_set::set;
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 string_set::string_set() {
    set.max_load_factor (0.5);
 }
