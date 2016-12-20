@@ -3,8 +3,7 @@
 #include <stdarg.h>
 #include <string>
 using namespace std;
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 // DESCRIPTION
 //    Auxiliary library containing miscellaneous useful things.
 //
