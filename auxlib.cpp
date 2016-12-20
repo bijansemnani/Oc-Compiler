@@ -11,8 +11,6 @@
 
 #include "auxlib.h"
 using namespace std;
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
 string exec::execname;
 static int exitstatus = EXIT_SUCCESS;
 static char* execname = NULL;
