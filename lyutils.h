@@ -1,6 +1,4 @@
-// $Id: lyutils.h,v 1.10 2016-10-06 16:42:53-07 - - $
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 #ifndef __UTILS_H__
 #define __UTILS_H__
 #define YYEOF 0
