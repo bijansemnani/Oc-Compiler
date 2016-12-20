@@ -1,5 +1,4 @@
-//Bijan Semnani bsemnani
-//Ricardo Munoz riamunoz
+
 #include <string>
 #include <cstddef>
 #include <iostream>
