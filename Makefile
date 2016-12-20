@@ -1,8 +1,7 @@
 GPP			= g++ -std=gnu++14 -g -O0 -Wall -Wextra
 MKDEP		= g++ -std=gnu++14 -MM
 VALGRIND	 = valgrind --leak-check=full --show-reachable=yes
-#Bijan  Semnani
-#Ricardo Munoz
+
 MKFILE	 = Makefile
 SOURCE1 = stringset.cpp main.cpp auxlib.cpp astree.cpp symtable.cpp
 SOURCE2 = lyutils.cpp yyparse.cpp yylex.cpp
